@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { decodeSession, SESSION_COOKIE_NAME } from "@/lib/session";
+import { decodeSessionEdge, SESSION_COOKIE_NAME } from "@/lib/session-edge";
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
-  const session = decodeSession(token);
+  const session = await decodeSessionEdge(token);
   if (!session || session.role !== "owner") {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
