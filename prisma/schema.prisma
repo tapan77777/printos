@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../apps/web/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PrinterStatus {
+  ONLINE
+  OFFLINE
+}
+
+enum ConnectionType {
+  LAPTOP_AGENT
+  RASPBERRY_PI
+}
+
+model Printer {
+  id             String         @id @default(cuid())
+  name           String
+  deviceId       String         @unique
+  location       String?
+  status         PrinterStatus  @default(OFFLINE)
+  connectionType ConnectionType @default(LAPTOP_AGENT)
+  capabilities   Json           @default("{\"colorModes\":[\"BW\"],\"paperSizes\":[\"A4\"],\"duplex\":false}")
+  lastHeartbeat  DateTime?
+  jobs           PrintJob[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+enum ColorMode {
+  BW
+  COLOUR
+}
+
+enum PrintStatus {
+  CREATED
+  UPLOADED
+  PAYMENT_PENDING
+  PAID
+  QUEUED
+  APPROVED
+  REJECTED
+  DOWNLOADING
+  PRINTING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  NOT_REQUIRED
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model PrintJob {
+  id                String        @id @default(cuid())
+  printerId         String
+  printer           Printer       @relation(fields: [printerId], references: [id])
+  fileId            String
+  customerSessionId String
+  copies            Int           @default(1)
+  colorMode         ColorMode     @default(BW)
+  pageRange         String        @default("all")
+  paperSize         String        @default("A4")
+  duplex            Boolean       @default(false)
+  pageCount         Int?
+  pagesPrinted      Int?
+  price             Int           @default(0)
+  paymentStatus     PaymentStatus @default(NOT_REQUIRED)
+  printStatus       PrintStatus   @default(QUEUED)
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  rejectionReason   String?
+  claimedAt         DateTime?
+  claimedBy         String?
+  claimExpiresAt    DateTime?
+  cupsJobId         String?
+  agentError        String?
+  createdAt         DateTime      @default(now())
+  startedAt         DateTime?
+  completedAt       DateTime?
+  failedAt          DateTime?
+
+  @@index([printerId, printStatus])
+  @@index([printStatus, claimExpiresAt])
+}
