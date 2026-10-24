@@ -1,3 +1,4 @@
+import {logAccountFailure} from "./authDiagnostic";
 import {accountResponse} from "./authResponse";
 import {accountRequest} from "./authBody";
 import {APIError} from "better-auth/api";
@@ -12,11 +13,11 @@ export async function sendAccountEmail(to:string,subject:string,url:string){
  const key=process.env.RESEND_API_KEY;const from=process.env.AUTH_EMAIL_FROM;
  if(!key||!from)throw Error("ACCOUNT_EMAIL_NOT_CONFIGURED");
  const response=await fetch("https://api.resend.com/emails",{method:"POST",redirect:"error",signal:AbortSignal.timeout(10000),headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify({from,to:[to],subject,text:`${subject}\n\n${url}\n\nIf you did not request this, ignore this message.`})});
- await response.body?.cancel();if(!response.ok)throw Error("ACCOUNT_EMAIL_DELIVERY_FAILED");
+ await response.body?.cancel();if(!response.ok)throw Object.assign(Error("ACCOUNT_EMAIL_DELIVERY_FAILED"),{providerStatus:response.status});
 }
 export function createAccountAuth(database:ReturnType<typeof prismaAdapter>, mail:Mail, origin:string, secret:string){
  const auth=betterAuth({
-  logger:{disabled:true},appName:"PrintOS",baseURL:origin,basePath:"/api/account-auth",secret,
+  logger:{level:"error",log:(level,_message,...args)=>{if(level==="error")logAccountFailure("better-auth",args);}},appName:"PrintOS",baseURL:origin,basePath:"/api/account-auth",secret,
   database, trustedOrigins:[origin],
   advanced:{cookiePrefix:"printos-account",useSecureCookies:new URL(origin).protocol==="https:",ipAddress:{ipAddressHeaders:process.env.PRINTOS_TRUST_PROXY==="true"?["x-real-ip"]:[]}},
   emailAndPassword:{enabled:true,requireEmailVerification:true,autoSignIn:false,minPasswordLength:12,maxPasswordLength:128,revokeSessionsOnPasswordReset:true,resetPasswordTokenExpiresIn:900,
