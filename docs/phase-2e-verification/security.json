@@ -1,0 +1,72 @@
+{
+  "phase": "2E.1",
+  "date": "2026-10-23",
+  "web": {
+    "counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 3,
+      "high": 0,
+      "critical": 0,
+      "total": 3
+    },
+    "packages": [
+      {
+        "name": "postcss-nested",
+        "severity": "moderate",
+        "direct": false,
+        "fixAvailable": true,
+        "advisories": []
+      },
+      {
+        "name": "postcss-selector-parser",
+        "severity": "moderate",
+        "direct": false,
+        "fixAvailable": {
+          "name": "tailwindcss",
+          "version": "4.3.3",
+          "isSemVerMajor": true
+        },
+        "advisories": [
+          {
+            "title": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+            "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+            "range": "<7.1.6"
+          }
+        ]
+      },
+      {
+        "name": "tailwindcss",
+        "severity": "moderate",
+        "direct": true,
+        "fixAvailable": {
+          "name": "tailwindcss",
+          "version": "4.3.3",
+          "isSemVerMajor": true
+        },
+        "advisories": []
+      }
+    ]
+  },
+  "webRuntime": {
+    "counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "packages": []
+  },
+  "agent": {
+    "counts": {
+      "total": 0
+    }
+  },
+  "desktop": {
+    "counts": {
+      "total": 0
+    }
+  }
+}

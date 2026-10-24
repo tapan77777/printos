@@ -1,0 +1,11 @@
+{
+  "enrollment": true,
+  "requiresExplicitActivation": true,
+  "sharedUtilityWorker": true,
+  "claimDownloadAckMockSubmitComplete": true,
+  "authorizations": 1,
+  "stoppedSafely": true,
+  "secretsAbsentFromRenderer": true,
+  "externalDataChanged": false,
+  "physicalPrinting": false
+}

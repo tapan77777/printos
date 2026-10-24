@@ -1,0 +1,61 @@
+{
+  "checkedOn": "darwin",
+  "installer": {
+    "file": "release/PrintOS Setup 0.1.0.exe",
+    "bytes": 112366602,
+    "sha256": "80b131d917ab725ffc4eaefce267972b5f72267df9167871bc5d60d352ee1a6d"
+  },
+  "installerPE": {
+    "machine": "14c",
+    "hasAuthenticodeCertificate": false
+  },
+  "windowsPayload": {
+    "machine": "8664",
+    "hasAuthenticodeCertificate": false
+  },
+  "windows": {
+    "archive": {
+      "file": "release/win-unpacked/resources/app.asar",
+      "bytes": 1603087,
+      "sha256": "eaf6670ae4592802ad34110017b919fd3e892b71b750a9f8e1b276d080e2612a"
+    },
+    "agentMatchesStaged": true,
+    "secretAndDocumentFilenameScan": "passed",
+    "fuses": {
+      "0": 48,
+      "1": 49,
+      "2": 48,
+      "3": 48,
+      "4": 49,
+      "5": 49,
+      "6": 48,
+      "7": 49,
+      "8": 49,
+      "version": "1"
+    }
+  },
+  "mac": {
+    "archive": {
+      "file": "release/mac-arm64/PrintOS.app/Contents/Resources/app.asar",
+      "bytes": 1603087,
+      "sha256": "eaf6670ae4592802ad34110017b919fd3e892b71b750a9f8e1b276d080e2612a"
+    },
+    "agentMatchesStaged": true,
+    "secretAndDocumentFilenameScan": "passed",
+    "fuses": {
+      "0": 48,
+      "1": 49,
+      "2": 48,
+      "3": 48,
+      "4": 49,
+      "5": 49,
+      "6": 48,
+      "7": 49,
+      "8": 49,
+      "version": "1"
+    }
+  },
+  "windowsExecution": "not performed",
+  "physicalPrinting": "not performed",
+  "signing": "No production signing credentials configured; certificate-presence check is not trust verification."
+}

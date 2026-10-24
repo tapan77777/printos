@@ -1,0 +1,11 @@
+{
+  "platform": "macOS",
+  "fixture": "loopback-only synthetic owner approval; AES test protector injected by privileged test driver",
+  "confirmed": true,
+  "plaintextCredentialAbsentFromDisk": true,
+  "credentialAbsentFromIpc": true,
+  "remoteNodeAndIpcAbsent": true,
+  "noJobRequests": true,
+  "printingEnabled": false,
+  "osKeychainUsed": false
+}

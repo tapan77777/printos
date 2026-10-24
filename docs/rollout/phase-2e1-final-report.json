@@ -1,0 +1,72 @@
+{
+  "projectRef": "xkqetjzplwusogbrilja",
+  "checkedAt": "2026-10-23T15:52:10.207Z",
+  "migration": "20261023010000_tenant_accounts",
+  "checksum": "dfaea87c193b9b6349a9252a2a17ed10feb6cfda1f2223e4b4da8e1cb3f7f3af",
+  "appliedAt": "2026-10-23T15:49:08.162Z",
+  "previousMigrationsPreserved": 3,
+  "ledgerComplete": true,
+  "prismaClientRegenerated": true,
+  "jobsPreserved": 10,
+  "printersPreserved": 1,
+  "allOriginalFieldsUnchanged": true,
+  "pricesAndStatusesUnchanged": true,
+  "allHistoricalShopIdsNull": true,
+  "noAccountsOrShopsCreated": true,
+  "newTableCounts": {
+    "users": 0,
+    "shops": 0,
+    "sessions": 0,
+    "accounts": 0,
+    "memberships": 0,
+    "invitations": 0,
+    "verifications": 0,
+    "rate_limits": 0
+  },
+  "serverRole": "postgres",
+  "serverAccessVerified": true,
+  "rlsProtectedTables": 12,
+  "rlsForced": false,
+  "publicPolicies": 0,
+  "deniedEffectivePrivilegeChecks": 192,
+  "deniedTriggerFunctionChecks": 4,
+  "tenantTriggersEnabled": 2,
+  "tenantForeignKeysAndRoleConstraintValidated": true,
+  "tenantIsolationVerification": "Database guards, deny-by-default Data API and immutable unassigned scope verified. No live two-shop/account scenario created.",
+  "actualApiRoleReadDenialChecks": 24,
+  "approval": "Explicit user approval for exact atomic SQL and test project only",
+  "backup": {
+    "file": ".printos-backups/2026-10-23T15-28-01.391Z-phase2e1/database.dump",
+    "createdAt": "2026-10-23T15:28:01.392Z",
+    "bytes": 293272,
+    "sha256": "5725fd2939f60dd072d52af5c12374949bf4df7edbe82486f62afba08f0c1b26",
+    "archiveAndLocalRestoreValidated": true
+  },
+  "sourceSqlSha256": "dfaea87c193b9b6349a9252a2a17ed10feb6cfda1f2223e4b4da8e1cb3f7f3af",
+  "tests": {
+    "webPassed": 134,
+    "realDisposablePostgresIntegrationPassed": 1,
+    "agentPassed": 76,
+    "desktopPassed": 13,
+    "webTypecheck": "passed",
+    "productionBuild": "passed",
+    "prismaValidation": "passed using dummy URL",
+    "diffCheck": "passed"
+  },
+  "restrictions": {
+    "secretsChanged": false,
+    "accountsCreatedInSupabase": false,
+    "historyAssigned": false,
+    "applicationDeployed": false,
+    "realPrintingStarted": false,
+    "committed": false,
+    "pushed": false
+  },
+  "limitations": [
+    "Live Supabase two-shop/account scenario not created, as instructed",
+    "New auth/email configuration still absent",
+    "Historical records remain quarantined with NULL shop scope",
+    "Windows and physical printing unverified"
+  ],
+  "status": "applied_and_verified"
+}

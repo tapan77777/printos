@@ -1,0 +1,118 @@
+{
+  "realLocalData": true,
+  "layouts": [
+    {
+      "page": "overview",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "overview",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "overview",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "overview",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "overview",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "overview",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 1440,
+      "overflow": false
+    }
+  ],
+  "pricing": [
+    {
+      "price": 1600,
+      "pageCount": 8
+    },
+    {
+      "price": 1800,
+      "pageCount": 8
+    },
+    {
+      "price": 3600,
+      "pageCount": 8
+    }
+  ],
+  "previewVerified": true,
+  "authVerified": true,
+  "statusVerified": true,
+  "jobFilteringVerified": true,
+  "mutatingRequestsSent": 0,
+  "pageErrors": [],
+  "failedAssets": [],
+  "consoleErrors": [],
+  "jobMutationsVerifiedWithMocksOnly": true
+}

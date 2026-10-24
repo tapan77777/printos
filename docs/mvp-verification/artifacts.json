@@ -1,0 +1,41 @@
+{
+  "checkedOn": "darwin",
+  "installer": {
+    "file": "release/PrintOS Setup 0.1.1.exe",
+    "bytes": 112375279,
+    "sha256": "2b75570fedeb7472b5898c64855b117322c578445f6865381ec1b25c427aef85"
+  },
+  "installerPE": {
+    "machine": "14c",
+    "hasAuthenticodeCertificate": false
+  },
+  "windowsPayload": {
+    "machine": "8664",
+    "hasAuthenticodeCertificate": false
+  },
+  "windows": {
+    "archive": {
+      "file": "release/win-unpacked/resources/app.asar",
+      "bytes": 1645746,
+      "sha256": "25f05977d846368d1c9b1b7eee815d47555b6d8ce17835931b190d91109a6731"
+    },
+    "agentMatchesStaged": true,
+    "secretAndDocumentFilenameScan": "passed",
+    "fuses": {
+      "0": 48,
+      "1": 49,
+      "2": 48,
+      "3": 48,
+      "4": 49,
+      "5": 49,
+      "6": 48,
+      "7": 49,
+      "8": 49,
+      "version": "1"
+    }
+  },
+  "mac": "Not rebuilt; Windows artifact inspection only",
+  "windowsExecution": "not performed",
+  "physicalPrinting": "not performed",
+  "signing": "No production signing credentials configured; certificate-presence check is not trust verification."
+}

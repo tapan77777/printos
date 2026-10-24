@@ -1,0 +1,56 @@
+{
+  "projectRef": "xkqetjzplwusogbrilja",
+  "backup": {
+    "createdAt": "2026-10-23T15:28:01.392Z",
+    "file": ".printos-backups/2026-10-23T15-28-01.391Z-phase2e1/database.dump",
+    "bytes": 293272,
+    "sha256": "5725fd2939f60dd072d52af5c12374949bf4df7edbe82486f62afba08f0c1b26",
+    "archiveValidated": true,
+    "privateFileModes": {
+      "database.dump": "600",
+      "before-records.json": "600",
+      "manifest.json": "600"
+    }
+  },
+  "validation": {
+    "projectRef": "xkqetjzplwusogbrilja",
+    "backupSha256": "5725fd2939f60dd072d52af5c12374949bf4df7edbe82486f62afba08f0c1b26",
+    "fullArchiveDecompressed": true,
+    "applicationSchemaRestored": true,
+    "allRestoredRowsMatchSnapshot": true,
+    "phase2aSchemaMatchesRestoredDatabase": true,
+    "localAtomicRehearsalPassed": true,
+    "originalJobsPreserved": 10,
+    "originalPrintersPreserved": 1,
+    "allHistoricalFieldsUnchanged": true,
+    "legacyShopIdsRemainNull": true,
+    "rlsEnabledTables": 12,
+    "anonAndAuthenticatedTablePrivilegesRemoved": true,
+    "selectDenialChecks": 24,
+    "rlsBlocksRowsEvenIfSelectIsRegranted": true,
+    "serviceRoleKept": true,
+    "atomicProposalSha256": "dfaea87c193b9b6349a9252a2a17ed10feb6cfda1f2223e4b4da8e1cb3f7f3af",
+    "originalMigrationSha256": "8292cd25efc29a07927ae88861f0943f7a1e80e9729e83927fee7dcc13d95363",
+    "lockdownSha256": "569df1e0d28d2f20472af955ad17ccb10298d84501ac43a08dca9562917c72ba",
+    "supabaseModified": false,
+    "scope": "Full archive decoded; application/public schema restored locally. Supabase platform schemas/roles were not restored."
+  },
+  "targetRecheck": {
+    "checkedAt": "2026-10-23T15:39:11.360Z",
+    "projectRef": "xkqetjzplwusogbrilja",
+    "jobs": 10,
+    "printers": 1,
+    "allOriginalRecordsAndMigrationLedgerUnchanged": true,
+    "tenantMigrationApplied": false,
+    "noTenantSchemaCreated": true
+  },
+  "authSettingsInLocalEnv": {
+    "PRINTOS_AUTH_MODE": false,
+    "BETTER_AUTH_URL": false,
+    "BETTER_AUTH_SECRET": false,
+    "RESEND_API_KEY": false,
+    "AUTH_EMAIL_FROM": false
+  },
+  "migrationApplied": false,
+  "approvalPending": true
+}

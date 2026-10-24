@@ -1,0 +1,12 @@
+{
+  "web": {"passed": 138, "ordinaryRunDatabaseSkips": 2, "typecheck": "passed", "build": "passed"},
+  "disposablePostgres": {"passed": 2, "supabaseAccessed": false},
+  "agent": {"passed": 76, "typecheck": "passed", "build": "passed"},
+  "desktop": {"passed": 18, "typecheck": "passed", "build": "passed", "electronMockNavigation": "passed", "electronSyntheticPairing": "passed"},
+  "prismaValidation": "passed",
+  "migrationAppliedToSupabase": false,
+  "accountsCreatedExternally": false,
+  "realPrintingStarted": false,
+  "windowsVerified": false,
+  "osKeychainVerified": false
+}

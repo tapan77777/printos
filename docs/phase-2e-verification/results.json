@@ -1,0 +1,59 @@
+{
+  "stage": "Phase 2E.1 only",
+  "platform": "macOS",
+  "supabaseModified": false,
+  "historicalDataModified": false,
+  "realPrintingStarted": false,
+  "tests": {
+    "web": {
+      "passed": 134,
+      "dedicatedDatabaseTestSkippedByDefault": 1
+    },
+    "disposablePostgres": {
+      "passed": 1,
+      "usesRealPrismaAdapter": true,
+      "usesBuiltNextServer": true,
+      "checks": [
+        "verified accounts",
+        "owner and staff membership",
+        "invitation acceptance",
+        "two-shop isolation",
+        "actual Jobs and Reports SSR",
+        "foreign job and PDF denial",
+        "membership removal",
+        "session revocation",
+        "database rate limits"
+      ],
+      "clusterStoppedAndRemoved": true
+    },
+    "agent": {
+      "passed": 76
+    },
+    "desktop": {
+      "passed": 13,
+      "electronMockReview": "passed"
+    }
+  },
+  "checks": {
+    "webTypecheck": "passed",
+    "webProductionBuild": "passed (Next.js 15.5.28)",
+    "agentTypecheckAndBuild": "passed",
+    "desktopTypecheckAndBuild": "passed",
+    "prismaValidation": "passed (dummy URL; no DB access)",
+    "gitDiffCheck": "passed"
+  },
+  "migration": {
+    "file": "prisma/migrations/20261023010000_tenant_accounts/migration.sql",
+    "sha256": "8292cd25efc29a07927ae88861f0943f7a1e80e9729e83927fee7dcc13d95363",
+    "appliedToSupabase": false
+  },
+  "pending": [
+    "exact migration approval and backup",
+    "production auth/email configuration",
+    "device pairing/credentials and revocation",
+    "shop-specific rate cards and snapshots",
+    "private object storage and cleanup",
+    "live desktop activation",
+    "Windows and physical verification"
+  ]
+}

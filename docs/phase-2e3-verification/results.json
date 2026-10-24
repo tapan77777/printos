@@ -1,0 +1,32 @@
+{
+  "web": {
+    "passed": 168,
+    "separateDatabaseSuites": 3,
+    "typecheck": "passed",
+    "build": "passed"
+  },
+  "disposablePostgres": {
+    "passed": 3,
+    "remoteDatabaseAccess": false
+  },
+  "desktop": {
+    "passed": 18,
+    "typecheck": "passed",
+    "build": "passed",
+    "electronMocks": "passed"
+  },
+  "agent": {
+    "passed": 76,
+    "typecheck": "passed"
+  },
+  "prismaValidation": "passed",
+  "migration": {
+    "path": "prisma/migrations/20261023030000_shop_pricing/migration.sql",
+    "sha256": "44c54c097cb6a6bc6a591635741b0e8ad77dc7f9195a979a1f215246e2f1b452",
+    "appliedToSupabase": false
+  },
+  "physicalPrinting": false,
+  "credentialsChanged": false,
+  "historicalRecordsChanged": false,
+  "visualBrowserAudit": false
+}

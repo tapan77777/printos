@@ -1,0 +1,21 @@
+{
+  "configured": {
+    "PRINTOS_DOCUMENT_STORAGE": false,
+    "SUPABASE_STORAGE_URL": false,
+    "SUPABASE_STORAGE_SECRET_KEY": false,
+    "PRINTOS_DOCUMENT_BUCKET": false
+  },
+  "issues": [
+    "Cloud document mode is not enabled.",
+    "Set the exact HTTPS Supabase project origin matching DATABASE_URL.",
+    "Supply a server-only Storage service-role JWT manually.",
+    "Set the approved private bucket name."
+  ],
+  "localConfigurationValid": false,
+  "uploadLimitBytes": 26214400,
+  "retentionDays": 7,
+  "cleanupEnabled": false,
+  "remoteBucketVerified": false,
+  "migrationsApplied": false,
+  "secretsChanged": false
+}

@@ -1,0 +1,25 @@
+{
+  "platform": "darwin",
+  "fixture": "isolated synthetic HTTP cloud",
+  "navigation": [
+    "login",
+    "overview",
+    "jobs",
+    "reports"
+  ],
+  "checks": [
+    "local onboarding",
+    "pairing explicitly blocked",
+    "macOS discovery explicitly unavailable",
+    "QR from verified mock registry",
+    "remote Node and IPC absent",
+    "window close retains diagnostic worker",
+    "diagnostic crash recovery",
+    "safe diagnostic stop",
+    "820/1024/1440 layout overflow",
+    "no cloud writes",
+    "no job claims"
+  ],
+  "pageErrors": [],
+  "cloudWrites": []
+}

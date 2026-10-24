@@ -1,0 +1,18 @@
+{
+  "web": {"passed": 179, "ordinaryRunDatabaseSkips": 4, "typecheck": "passed", "productionBuild": "passed"},
+  "disposablePostgres": {"passed": 4, "supabaseAccessed": false, "cloudFilesystemWritesForbidden": true},
+  "storageProvider": "REST mocks and an in-memory object adapter; live Supabase not verified",
+  "storagePolicy": "embedded PostgreSQL with broad permissive fixture policies and restrictive private-bucket policy",
+  "agent": {"passed": 81, "typecheck": "passed", "build": "passed"},
+  "desktop": {"passed": 20, "typecheck": "passed", "build": "passed", "electronMocks": "passed", "syntheticPdfPreview": "rendered and visually inspected"},
+  "prismaValidation": "passed",
+  "migrationSha256": "d29f48cc2d62c3fc7ddfdc3defbffde3dc77d54f9b6361c152fd2aed81e7315e",
+  "bucketProposalSha256": "3907439c9d3120085ffed0c561b6e3c7082f0c3a49ea6c2fbc3a921b6ee21b49",
+  "remoteMigrationsApplied": false,
+  "bucketCreated": false,
+  "existingFilesCopiedOrChanged": false,
+  "secretsChanged": false,
+  "realPrintingStarted": false,
+  "windowsVerified": false,
+  "vercelDeployed": false
+}

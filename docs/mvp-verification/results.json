@@ -1,0 +1,10 @@
+{
+  "web": {"passed":180,"separateDatabaseSuites":5,"typecheck":"passed","productionBuild":"passed"},
+  "agent": {"passed":81,"typecheck":"passed","build":"passed"},
+  "desktop": {"passed":24,"typecheck":"passed","build":"passed","electronEnrollmentAndPreviewMocks":"passed","utilityWorkerLiveMock":"passed"},
+  "disposablePostgres": {"passed":5,"activationAndPinnedClaims":"passed"},
+  "remoteAudit": {"project":"xkqetjzplwusogbrilja","tls":true,"serverRole":"postgres","pendingMigrations":4,"documentBucketExists":false,"remoteWrites":false},
+  "backup": {"sha256":"8727ffcda2af55ecb19d328d2cd7f370215e98f9eca64138a4de4937f4562bd6","applicationRestoreValidated":true,"refreshRequiredIfOlderThan30Minutes":true},
+  "installer": {"version":"0.1.1","architecture":"Windows x64","sha256":"2b75570fedeb7472b5898c64855b117322c578445f6865381ec1b25c427aef85","bytes":112375279,"unsigned":true,"sourceAndAgentPayloadMatch":true,"windowsExecutionVerified":false},
+  "physicalPrinting":false,"deployed":false,"secretsChanged":false,"migrationsAppliedRemotely":false
+}

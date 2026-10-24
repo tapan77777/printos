@@ -1,0 +1,176 @@
+[
+  {
+    "page": "dashboard",
+    "error": true,
+    "css": [
+      {
+        "href": "/_next/static/css/app/layout.css",
+        "rules": 385
+      }
+    ],
+    "filter": null,
+    "table": null,
+    "overflow": false,
+    "errors": [
+      "\nInvalid `prisma.printJob.count()` invocation:\n\n\nThe column `PrintJob.simulation` does not exist in the current database.",
+      "\nInvalid `prisma.printJob.count()` invocation:\n\n\nThe column `PrintJob.simulation` does not exist in the current database."
+    ],
+    "failed": [
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      }
+    ]
+  },
+  {
+    "page": "dashboard/jobs",
+    "error": true,
+    "css": [
+      {
+        "href": "/_next/static/css/app/layout.css",
+        "rules": 385
+      }
+    ],
+    "filter": null,
+    "table": null,
+    "overflow": false,
+    "errors": [
+      "\nInvalid `prisma.printJob.findMany()` invocation:\n\n\nThe column `PrintJob.attemptId` does not exist in the current database.",
+      "\nInvalid `prisma.printJob.findMany()` invocation:\n\n\nThe column `PrintJob.attemptId` does not exist in the current database.",
+      "\nInvalid `prisma.printJob.findMany()` invocation:\n\n\nThe column `PrintJob.attemptId` does not exist in the current database.",
+      "\nInvalid `prisma.printJob.findMany()` invocation:\n\n\nThe column `PrintJob.attemptId` does not exist in the current database.",
+      "\nInvalid `prisma.printJob.findMany()` invocation:\n\n\nThe column `PrintJob.attemptId` does not exist in the current database.",
+      "\nInvalid `prisma.printJob.findMany()` invocation:\n\n\nThe column `PrintJob.attemptId` does not exist in the current database."
+    ],
+    "failed": [
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      }
+    ]
+  },
+  {
+    "page": "dashboard/reports",
+    "error": true,
+    "css": [
+      {
+        "href": "/_next/static/css/app/layout.css",
+        "rules": 385
+      }
+    ],
+    "filter": null,
+    "table": null,
+    "overflow": false,
+    "errors": [
+      "\nInvalid `prisma.printJob.aggregate()` invocation:\n\n\nThe column `PrintJob.simulation` does not exist in the current database.",
+      "\nInvalid `prisma.printJob.aggregate()` invocation:\n\n\nThe column `PrintJob.simulation` does not exist in the current database.",
+      "\nInvalid `prisma.printJob.aggregate()` invocation:\n\n\nThe column `PrintJob.simulation` does not exist in the current database."
+    ],
+    "failed": [
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      },
+      {
+        "url": "/__nextjs_original-stack-frame",
+        "status": 400
+      }
+    ]
+  }
+]

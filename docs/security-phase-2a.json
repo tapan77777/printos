@@ -1,0 +1,469 @@
+{
+  "before": {
+    "info": 0,
+    "low": 0,
+    "moderate": 5,
+    "high": 8,
+    "critical": 3,
+    "total": 16
+  },
+  "after": {
+    "info": 0,
+    "low": 0,
+    "moderate": 5,
+    "high": 6,
+    "critical": 3,
+    "total": 14
+  },
+  "productionOnly": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 1,
+    "total": 1
+  },
+  "agent": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "root": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packages": [
+    {
+      "name": "@vitest/mocker",
+      "beforeSeverity": "moderate",
+      "remainingSeverity": "moderate",
+      "direct": false,
+      "recommendedFix": {
+        "name": "vitest",
+        "version": "5.0.5",
+        "isSemVerMajor": true
+      },
+      "advisories": [
+        {
+          "title": "Vitest: Path Traversal / Arbitrary File Read via @vitest/mocker Redirect Mock",
+          "url": "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+          "affectedRange": ">=2.1.0 <4.1.11"
+        },
+        {
+          "title": "Vitest: Code injection via unauthenticated manual mock registration",
+          "url": "https://github.com/advisories/GHSA-qxg6-89mg-rqv8",
+          "affectedRange": ">=2.1.0-beta.7 <4.1.12"
+        }
+      ]
+    },
+    {
+      "name": "braces",
+      "beforeSeverity": "high",
+      "remainingSeverity": "high",
+      "direct": false,
+      "recommendedFix": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      },
+      "advisories": [
+        {
+          "title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "affectedRange": "<=3.0.3"
+        }
+      ]
+    },
+    {
+      "name": "chokidar",
+      "beforeSeverity": "high",
+      "remainingSeverity": "high",
+      "direct": false,
+      "recommendedFix": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      },
+      "advisories": []
+    },
+    {
+      "name": "esbuild",
+      "beforeSeverity": "moderate",
+      "remainingSeverity": "moderate",
+      "direct": false,
+      "recommendedFix": {
+        "name": "vitest",
+        "version": "5.0.5",
+        "isSemVerMajor": true
+      },
+      "advisories": [
+        {
+          "title": "esbuild enables any website to send any requests to the development server and read the response",
+          "url": "https://github.com/advisories/GHSA-67mh-4wv8-2f99",
+          "affectedRange": "<=0.24.2"
+        }
+      ]
+    },
+    {
+      "name": "fast-glob",
+      "beforeSeverity": "high",
+      "remainingSeverity": "high",
+      "direct": false,
+      "recommendedFix": true,
+      "advisories": []
+    },
+    {
+      "name": "micromatch",
+      "beforeSeverity": "high",
+      "remainingSeverity": "high",
+      "direct": false,
+      "recommendedFix": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      },
+      "advisories": []
+    },
+    {
+      "name": "next",
+      "beforeSeverity": "critical",
+      "remainingSeverity": "critical",
+      "direct": true,
+      "recommendedFix": {
+        "name": "next",
+        "version": "16.4.2",
+        "isSemVerMajor": true
+      },
+      "advisories": [
+        {
+          "title": "Next.js self-hosted applications vulnerable to DoS via Image Optimizer remotePatterns configuration",
+          "url": "https://github.com/advisories/GHSA-9g9p-9gw9-jx7f",
+          "affectedRange": ">=10.0.0 <15.5.10"
+        },
+        {
+          "title": "Next.js HTTP request deserialization can lead to DoS when using insecure React Server Components",
+          "url": "https://github.com/advisories/GHSA-h25m-26qc-wcjf",
+          "affectedRange": ">=13.0.0 <15.0.8"
+        },
+        {
+          "title": "Next.js: HTTP request smuggling in rewrites",
+          "url": "https://github.com/advisories/GHSA-ggv3-7p47-pfv8",
+          "affectedRange": ">=9.5.0 <15.5.13"
+        },
+        {
+          "title": "Next.js: Unbounded next/image disk cache growth can exhaust storage",
+          "url": "https://github.com/advisories/GHSA-3x4c-7xq6-9pq8",
+          "affectedRange": ">=10.0.0 <15.5.14"
+        },
+        {
+          "title": "Next.js has a Denial of Service with Server Components",
+          "url": "https://github.com/advisories/GHSA-q4gf-8mx6-v5v3",
+          "affectedRange": ">=13.0.0 <15.5.15"
+        },
+        {
+          "title": "Next.js Vulnerable to Denial of Service with Server Components",
+          "url": "https://github.com/advisories/GHSA-8h8q-6873-q5fj",
+          "affectedRange": ">=13.0.0 <15.5.16"
+        },
+        {
+          "title": "Next.js's Middleware / Proxy redirects can be cache-poisoned",
+          "url": "https://github.com/advisories/GHSA-3g8h-86w9-wvmq",
+          "affectedRange": ">=12.2.0 <15.5.16"
+        },
+        {
+          "title": "Next.js vulnerable to cross-site scripting in App Router applications using CSP nonces",
+          "url": "https://github.com/advisories/GHSA-ffhc-5mcf-pf4q",
+          "affectedRange": ">=13.4.0 <15.5.16"
+        },
+        {
+          "title": "Next.js vulnerable to cache poisoning via collisions in React Server Component cache-busting",
+          "url": "https://github.com/advisories/GHSA-vfv6-92ff-j949",
+          "affectedRange": ">=13.4.6 <15.5.16"
+        },
+        {
+          "title": "Next.js has cross-site scripting in beforeInteractive scripts with untrusted input",
+          "url": "https://github.com/advisories/GHSA-gx5p-jg67-6x7h",
+          "affectedRange": ">=13.0.0 <15.5.16"
+        },
+        {
+          "title": "Next.js has a Denial of Service in the Image Optimization API",
+          "url": "https://github.com/advisories/GHSA-h64f-5h5j-jqjh",
+          "affectedRange": ">=10.0.0 <15.5.16"
+        },
+        {
+          "title": "Next.js vulnerable to server-side request forgery in applications using WebSocket upgrades",
+          "url": "https://github.com/advisories/GHSA-c4j6-fc7j-m34r",
+          "affectedRange": ">=13.4.13 <15.5.16"
+        },
+        {
+          "title": "Next.js vulnerable to cache poisoning in React Server Component responses",
+          "url": "https://github.com/advisories/GHSA-wfc6-r584-vfw7",
+          "affectedRange": ">=14.2.0 <15.5.16"
+        },
+        {
+          "title": "Next.js has a Middleware / Proxy bypass in Pages Router applications using i18n",
+          "url": "https://github.com/advisories/GHSA-36qx-fr4f-26g5",
+          "affectedRange": ">=12.2.0 <15.5.16"
+        },
+        {
+          "title": "Next.js: Denial of Service in App Router using Server Actions",
+          "url": "https://github.com/advisories/GHSA-m99w-x7hq-7vfj",
+          "affectedRange": ">=13.0.0 <15.5.21"
+        },
+        {
+          "title": "Next.js: Server-Side Request Forgery in Server Actions on custom servers",
+          "url": "https://github.com/advisories/GHSA-89xv-2m56-2m9x",
+          "affectedRange": ">=14.1.1 <15.5.21"
+        },
+        {
+          "title": "Next.js: Cache confusion of response bodies for requests with bodies",
+          "url": "https://github.com/advisories/GHSA-68g3-v927-f742",
+          "affectedRange": ">=13.0.0 <15.5.21"
+        },
+        {
+          "title": "Next.js: Cache confusion of response bodies for requests with bodies containing invalid UTF-8 byte sequences",
+          "url": "https://github.com/advisories/GHSA-4633-3j49-mh5q",
+          "affectedRange": ">=13.0.0 <15.5.21"
+        },
+        {
+          "title": "Next.js: Unbounded Server Action payload in Edge runtime",
+          "url": "https://github.com/advisories/GHSA-4c39-4ccg-62r3",
+          "affectedRange": ">=13.0.0 <15.5.21"
+        },
+        {
+          "title": "Next.js: Server-Side Request Forgery in rewrites via attacker-controlled destination hostname",
+          "url": "https://github.com/advisories/GHSA-p9j2-gv94-2wf4",
+          "affectedRange": ">=12.0.0 <15.5.21"
+        },
+        {
+          "title": "Next.js: Unauthenticated disclosure of internal Server Function endpoints",
+          "url": "https://github.com/advisories/GHSA-955p-x3mx-jcvp",
+          "affectedRange": ">=13.0.0 <15.5.21"
+        },
+        {
+          "title": "Next.js: Unauthenticated Remote Code Execution on windows-hosted servers",
+          "url": "https://github.com/advisories/GHSA-p293-qw3h-jr36",
+          "affectedRange": ">=13.4.0 <15.5.24"
+        },
+        {
+          "title": "Next.js: Unauthenticated Remote Code Execution in Image Optimization API when AVIF files are used",
+          "url": "https://github.com/advisories/GHSA-2xp9-vwfh-vxw4",
+          "affectedRange": ">=10.0.0 <15.5.24"
+        },
+        {
+          "title": "Next.js: Unauthenticated Remote Code Execution in Image Optimization API when SVG files are used",
+          "url": "https://github.com/advisories/GHSA-2464-fhr4-w9xw",
+          "affectedRange": ">=10.0.0 <=15.5.27"
+        },
+        {
+          "title": "Next.js: Denial of Service in App Router using Server Actions",
+          "url": "https://github.com/advisories/GHSA-p3m5-59mp-jv5r",
+          "affectedRange": ">=13.0.0 <=15.5.27"
+        }
+      ]
+    },
+    {
+      "name": "postcss",
+      "beforeSeverity": "high",
+      "remainingSeverity": null,
+      "direct": false,
+      "recommendedFix": {
+        "name": "next",
+        "version": "16.4.2",
+        "isSemVerMajor": true
+      },
+      "advisories": [
+        {
+          "title": "PostCSS has XSS via Unescaped </style> in its CSS Stringify Output",
+          "url": "https://github.com/advisories/GHSA-qx2v-qp2m-jg93",
+          "affectedRange": "<8.5.10"
+        },
+        {
+          "title": "PostCSS: Arbitrary file read and information disclosure via attacker-controlled sourceMappingURL in CSS comments",
+          "url": "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+          "affectedRange": "<=8.5.11"
+        },
+        {
+          "title": "PostCSS: incomplete fix of GHSA-6g55-p6wh-862q \u2014 attacker-controlled sourceMappingURL reads arbitrary .map files when `from` is unset",
+          "url": "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+          "affectedRange": "<=8.5.22"
+        },
+        {
+          "title": "PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure",
+          "url": "https://github.com/advisories/GHSA-r28c-9q8g-f849",
+          "affectedRange": "<=8.5.17"
+        }
+      ]
+    },
+    {
+      "name": "postcss-nested",
+      "beforeSeverity": "moderate",
+      "remainingSeverity": "moderate",
+      "direct": false,
+      "recommendedFix": true,
+      "advisories": []
+    },
+    {
+      "name": "postcss-selector-parser",
+      "beforeSeverity": "moderate",
+      "remainingSeverity": "moderate",
+      "direct": false,
+      "recommendedFix": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      },
+      "advisories": [
+        {
+          "title": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+          "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+          "affectedRange": "<7.1.6"
+        }
+      ]
+    },
+    {
+      "name": "source-map-js",
+      "beforeSeverity": "high",
+      "remainingSeverity": null,
+      "direct": false,
+      "recommendedFix": true,
+      "advisories": [
+        {
+          "title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+          "url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+          "affectedRange": ">=1.0.0 <1.2.2"
+        }
+      ]
+    },
+    {
+      "name": "tailwindcss",
+      "beforeSeverity": "high",
+      "remainingSeverity": "high",
+      "direct": true,
+      "recommendedFix": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      },
+      "advisories": []
+    },
+    {
+      "name": "tinypool",
+      "beforeSeverity": "critical",
+      "remainingSeverity": "critical",
+      "direct": false,
+      "recommendedFix": {
+        "name": "vitest",
+        "version": "5.0.5",
+        "isSemVerMajor": true
+      },
+      "advisories": [
+        {
+          "title": "Tinypool: Prototype Pollution gadget in worker options leads to Remote Code Execution",
+          "url": "https://github.com/advisories/GHSA-5gmw-xhrv-c9v3",
+          "affectedRange": "<=2.1.0"
+        },
+        {
+          "title": "Tinypool: Prototype Pollution Gadget to RCE in run() options",
+          "url": "https://github.com/advisories/GHSA-85c8-ppgw-ccpr",
+          "affectedRange": "<2.1.2"
+        }
+      ]
+    },
+    {
+      "name": "vite",
+      "beforeSeverity": "high",
+      "remainingSeverity": "high",
+      "direct": false,
+      "recommendedFix": {
+        "name": "vitest",
+        "version": "5.0.5",
+        "isSemVerMajor": true
+      },
+      "advisories": [
+        {
+          "title": "Vite Vulnerable to Path Traversal in Optimized Deps `.map` Handling",
+          "url": "https://github.com/advisories/GHSA-4w7w-66w2-5vf9",
+          "affectedRange": "<=6.4.1"
+        },
+        {
+          "title": "launch-editor: NTLMv2 hash disclosure via UNC path handling on Windows",
+          "url": "https://github.com/advisories/GHSA-v6wh-96g9-6wx3",
+          "affectedRange": "<=6.4.2"
+        },
+        {
+          "title": "vite: `server.fs.deny` bypass on Windows alternate paths",
+          "url": "https://github.com/advisories/GHSA-fx2h-pf6j-xcff",
+          "affectedRange": "<=6.4.2"
+        },
+        {
+          "title": "launch-editor: escapeCmdArgs() omits % escaping on Windows",
+          "url": "https://github.com/advisories/GHSA-698v-4r3x-3vcv",
+          "affectedRange": "<=6.4.3"
+        },
+        {
+          "title": "launch-editor: Editor CLI flag misinterpretation causing arbitrary command execution for some editors",
+          "url": "https://github.com/advisories/GHSA-r825-w8mm-5pxw",
+          "affectedRange": "<=6.4.3"
+        },
+        {
+          "title": "launch-editor: `fs.existsSync()` existence check can be bypassed on Windows",
+          "url": "https://github.com/advisories/GHSA-587h-7wmj-h5pm",
+          "affectedRange": "<=6.4.3"
+        },
+        {
+          "title": "Vite: Cross origin script execution through Vite custom middleware",
+          "url": "https://github.com/advisories/GHSA-9jrq-w75r-8gcw",
+          "affectedRange": "<=6.4.3"
+        },
+        {
+          "title": "Vite: Files outside `server.fs.allow` could be served when project paths match system paths on non-Windows machine",
+          "url": "https://github.com/advisories/GHSA-rq7h-c2jc-7f22",
+          "affectedRange": "<=6.4.3"
+        }
+      ]
+    },
+    {
+      "name": "vite-node",
+      "beforeSeverity": "moderate",
+      "remainingSeverity": "moderate",
+      "direct": false,
+      "recommendedFix": {
+        "name": "vitest",
+        "version": "5.0.5",
+        "isSemVerMajor": true
+      },
+      "advisories": []
+    },
+    {
+      "name": "vitest",
+      "beforeSeverity": "critical",
+      "remainingSeverity": "critical",
+      "direct": true,
+      "recommendedFix": {
+        "name": "vitest",
+        "version": "5.0.5",
+        "isSemVerMajor": true
+      },
+      "advisories": [
+        {
+          "title": "When Vitest UI server is listening, arbitrary file can be read and executed",
+          "url": "https://github.com/advisories/GHSA-5xrq-8626-4rwp",
+          "affectedRange": "<3.2.6"
+        },
+        {
+          "title": "Vitest: Path Traversal / Arbitrary File Read via @vitest/mocker Redirect Mock",
+          "url": "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+          "affectedRange": ">=2.1.0 <4.1.11"
+        }
+      ]
+    }
+  ]
+}

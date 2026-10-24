@@ -1,0 +1,23 @@
+{
+  "databaseConfigured": true,
+  "configured": {
+    "PRINTOS_AUTH_MODE": false,
+    "BETTER_AUTH_URL": false,
+    "BETTER_AUTH_SECRET": false,
+    "RESEND_API_KEY": false,
+    "AUTH_EMAIL_FROM": false
+  },
+  "problems": [
+    "Set PRINTOS_AUTH_MODE=tenant.",
+    "Set the exact local application origin (recommended http://localhost:3001).",
+    "Manually generate and store a dedicated random development auth secret (32+ characters).",
+    "Create a development-scoped Resend sending key and store it server-side.",
+    "Set a sender authorized by your Resend account."
+  ],
+  "ready": false,
+  "emailVerificationRequired": true,
+  "externalEmailDeliveryTested": false,
+  "accountsCreated": false,
+  "secretsChanged": false,
+  "deviceEnrollmentEnabled": false
+}

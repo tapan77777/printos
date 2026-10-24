@@ -1,0 +1,330 @@
+{
+  "fixtureOnly": true,
+  "checks": [
+    {
+      "page": "home",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "login",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "upload",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "selected-file",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "status",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "dashboard",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "home",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "login",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "upload",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "selected-file",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "status",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "dashboard",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "page": "home",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "login",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "upload",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "selected-file",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "status",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "dashboard",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "page": "home",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "login",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "upload",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "selected-file",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "status",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "dashboard",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "home",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "login",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "upload",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "selected-file",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "status",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "dashboard",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "page": "home",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "page": "login",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "page": "upload",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "page": "selected-file",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "page": "status",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "page": "dashboard",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "page": "jobs",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "page": "reports",
+      "width": 1440,
+      "overflow": false
+    }
+  ],
+  "accessibility": [
+    {
+      "page": "home-375",
+      "violations": []
+    },
+    {
+      "page": "login-375",
+      "violations": []
+    },
+    {
+      "page": "upload-375",
+      "violations": []
+    },
+    {
+      "page": "selected-file-375",
+      "violations": []
+    },
+    {
+      "page": "status-375",
+      "violations": []
+    },
+    {
+      "page": "dashboard-375",
+      "violations": []
+    },
+    {
+      "page": "jobs-375",
+      "violations": []
+    },
+    {
+      "page": "reports-375",
+      "violations": []
+    },
+    {
+      "page": "home-1440",
+      "violations": []
+    },
+    {
+      "page": "login-1440",
+      "violations": []
+    },
+    {
+      "page": "upload-1440",
+      "violations": []
+    },
+    {
+      "page": "status-1440",
+      "violations": []
+    },
+    {
+      "page": "dashboard-1440",
+      "violations": []
+    },
+    {
+      "page": "jobs-1440",
+      "violations": []
+    },
+    {
+      "page": "reports-1440",
+      "violations": []
+    },
+    {
+      "page": "dialog-320",
+      "violations": []
+    }
+  ],
+  "interactionChecks": [
+    "upload and quote",
+    "quote loading state",
+    "invalid ranges",
+    "submission failure recovery without retry",
+    "mocked submission success",
+    "login failure and success",
+    "dialog focus and Escape",
+    "cancel sends no action",
+    "explicit approval",
+    "rejection reason and network recovery",
+    "320px modal focus containment",
+    "all active and terminal statuses",
+    "empty queue",
+    "keyboard focus"
+  ],
+  "pageErrors": [],
+  "unexpectedConsoleErrors": [],
+  "expectedNetworkErrors": 3
+}
