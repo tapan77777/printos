@@ -1,4 +1,12 @@
+import { getOwnerFromCookies } from "@/lib/session";
+import { ownerScope } from "@/lib/tenantAccess";
+import { redirect } from "next/navigation";
+import { formatPrice } from "@/lib/pricing";
 import Link from "next/link";
+import { HEALTH_TTL_MS } from "@/lib/agentHealth";
+import { Icon, type IconName } from "../components/Icon";
+import { PageHeading, Notice } from "../components/ui";
+import { RefreshButton } from "../components/RefreshButton";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -18,32 +26,34 @@ function startOf(date: Date, kind: "day" | "week" | "month"): Date {
 }
 
 async function stats() {
+  const owner=await getOwnerFromCookies();if(!owner)redirect("/shops");
+  const scope=ownerScope(owner);
   const now = new Date();
   const [today, week, month, printersOnline, printersTotal, pendingApproval, printing] = await Promise.all([
     prisma.printJob.aggregate({
       _count: { _all: true },
       _sum: { price: true, pagesPrinted: true },
-      where: { printStatus: "COMPLETED", completedAt: { gte: startOf(now, "day") } },
+      where: { ...scope, simulation: false, printStatus: "COMPLETED", completedAt: { gte: startOf(now, "day") } },
     }),
     prisma.printJob.aggregate({
       _count: { _all: true },
       _sum: { price: true, pagesPrinted: true },
-      where: { printStatus: "COMPLETED", completedAt: { gte: startOf(now, "week") } },
+      where: { ...scope, simulation: false, printStatus: "COMPLETED", completedAt: { gte: startOf(now, "week") } },
     }),
     prisma.printJob.aggregate({
       _count: { _all: true },
       _sum: { price: true, pagesPrinted: true },
-      where: { printStatus: "COMPLETED", completedAt: { gte: startOf(now, "month") } },
+      where: { ...scope, simulation: false, printStatus: "COMPLETED", completedAt: { gte: startOf(now, "month") } },
     }),
-    prisma.printer.count({ where: { status: "ONLINE" } }),
-    prisma.printer.count(),
-    prisma.printJob.count({ where: { printStatus: "QUEUED" } }),
-    prisma.printJob.count({ where: { printStatus: { in: ["APPROVED", "DOWNLOADING", "PRINTING"] } } }),
+    prisma.printer.count({ where: { ...scope, simulationOnly: false, status: "ONLINE", lastHeartbeat: { gte: new Date(Date.now() - HEALTH_TTL_MS), lte: new Date() } } }),
+    prisma.printer.count({ where: { ...scope, simulationOnly: false } }),
+    prisma.printJob.count({ where: { ...scope, simulation: false, printStatus: "QUEUED" } }),
+    prisma.printJob.count({ where: { ...scope, simulation: false, printStatus: { in: ["APPROVED", "DOWNLOADING", "PRINTING"] } } }),
   ]);
 
   const paid = await prisma.printJob.aggregate({
     _sum: { price: true },
-    where: { printStatus: "COMPLETED", paymentStatus: "PAID", completedAt: { gte: startOf(now, "day") } },
+    where: { ...scope, simulation: false, printStatus: "COMPLETED", paymentStatus: "PAID", completedAt: { gte: startOf(now, "day") } },
   });
 
   return {
@@ -59,55 +69,24 @@ async function stats() {
 }
 
 function paiseToRupees(paise: number | null | undefined): string {
-  return `₹${((paise ?? 0) / 100).toFixed(2)}`;
+  return formatPrice(paise ?? 0);
 }
 
 export default async function Dashboard() {
   const s = await stats();
 
-  const cards = [
-    { label: "Printers Online", value: `${s.printersOnline} / ${s.printersTotal}` },
-    { label: "Pending Approval", value: s.pendingApproval.toString() },
-    { label: "In Progress", value: s.printing.toString() },
-    { label: "Completed Today", value: (s.today._count._all ?? 0).toString() },
-    { label: "Pages Today", value: (s.today._sum.pagesPrinted ?? 0).toString() },
-    { label: "Sales Today (recorded)", value: paiseToRupees(s.today._sum.price) },
-    { label: "Sales Today (collected)", value: paiseToRupees(s.paidToday) },
-    { label: "Sales This Month", value: paiseToRupees(s.month._sum.price) },
+  const cards: { label: string; value: string; caption: string; icon: IconName; featured?: boolean }[] = [
+    { label: "Awaiting approval", value: String(s.pendingApproval), caption: "Ready for your review", icon: "jobs", featured: true },
+    { label: "In progress", value: String(s.printing), caption: "Approved, sending or printing", icon: "printer" },
+    { label: "Completed today", value: String(s.today._count._all ?? 0), caption: "Jobs marked completed", icon: "check" },
+    { label: "Recorded sales today", value: paiseToRupees(s.today._sum.price), caption: "Value of completed jobs", icon: "chart" },
   ];
-
-  return (
-    <main className="max-w-5xl mx-auto p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold">PrintOS Admin</h1>
-        <form action="/api/auth/logout" method="post">
-          <button className="text-sm text-gray-600 underline">Sign out</button>
-        </form>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {cards.map((c) => (
-          <div key={c.label} className="border border-gray-200 rounded-xl p-4">
-            <div className="text-sm text-gray-500">{c.label}</div>
-            <div className="text-2xl font-semibold mt-1">{c.value}</div>
-          </div>
-        ))}
-      </div>
-
-      <p className="text-xs text-gray-500 mt-3">
-        "Recorded" is the sum of `PrintJob.price` for COMPLETED jobs. "Collected" is COMPLETED + PAID.
-        A payment gateway is not integrated yet; in dev mode all jobs are created with
-        <code> paymentStatus=NOT_REQUIRED</code>.
-      </p>
-
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link href="/dashboard/jobs" className="border border-gray-200 rounded-xl px-4 py-2 text-sm hover:bg-gray-50">
-          View Jobs →
-        </Link>
-        <Link href="/dashboard/reports" className="border border-gray-200 rounded-xl px-4 py-2 text-sm hover:bg-gray-50">
-          Reports →
-        </Link>
-      </div>
-    </main>
-  );
+  return <>
+    <PageHeading eyebrow="YOUR WORKSPACE, AT A GLANCE" title="A clear view of your day." description="Review the queue, follow your jobs and keep the counter moving."><RefreshButton/></PageHeading>
+    <div className="metric-grid">{cards.map((c) => <section key={c.label} className={`panel metric ${c.featured ? "metric-featured" : ""}`}><div className="metric-top"><span>{c.label}</span><span className="metric-icon"><Icon name={c.icon} size={17}/></span></div><p className="metric-value">{c.value}</p><p className="metric-caption">{c.caption}</p></section>)}</div>
+    <section className="queue-callout"><div><h2>{s.pendingApproval ? `${s.pendingApproval} ${s.pendingApproval === 1 ? "job is" : "jobs are"} waiting for you` : "Your queue is ready when you are"}</h2><p>Check the document and print options before you approve.</p></div><Link className="btn btn-primary" href="/dashboard/jobs?status=QUEUED">Review print jobs<Icon name="arrow" size={16}/></Link></section>
+    <div className="overview-bottom"><section className="panel"><div className="panel-head"><div><h2>Today’s activity</h2><p>The numbers behind your counter.</p></div><Icon name="chart" style={{ color: "var(--muted)" }}/></div><div className="panel-body"><div className="summary-row"><span className="muted">Printers reported online</span><strong>{s.printersOnline} of {s.printersTotal}</strong></div><div className="summary-row"><span className="muted">Pages reported printed today</span><strong>{s.today._sum.pagesPrinted ?? 0}</strong></div><div className="summary-row"><span className="muted">Collected sales today</span><strong>{paiseToRupees(s.paidToday)}</strong></div><div className="summary-row"><span className="muted">Recorded sales this month</span><strong>{paiseToRupees(s.month._sum.price)}</strong></div><Link href="/dashboard/reports" className="text-link" style={{ marginTop: 15 }}>Explore reports<Icon name="arrow" size={15}/></Link></div></section>
+    <section className="panel"><div className="panel-head"><div><h2>From upload to pickup</h2><p>A simple workflow. You stay in control.</p></div></div><div className="panel-body">{[{ title: "A customer sends a PDF", text: "Their document and print options arrive in your queue." }, { title: "You review and approve", text: "Preview the PDF, check the options, then accept or reject." }, { title: "Follow the job’s progress", text: "The agent reports updates as the job moves through printing." }].map((step, index) => <div className="workflow-item" key={step.title}><span>{index + 1}</span><div><h3>{step.title}</h3><p>{step.text}</p></div></div>)}</div></section></div>
+    <Notice>These are recorded job totals. Online status depends on stored printer data, and reported page counts may be incomplete. Payment collection is not integrated.</Notice>
+  </>;
 }

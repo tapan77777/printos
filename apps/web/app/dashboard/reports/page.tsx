@@ -1,4 +1,11 @@
+import { getOwnerFromCookies } from "@/lib/session";
+import { ownerScope } from "@/lib/tenantAccess";
+import { redirect } from "next/navigation";
+import { formatPrice } from "@/lib/pricing";
 import { prisma } from "@/lib/prisma";
+import { PageHeading, Notice } from "../../components/ui";
+import { RefreshButton } from "../../components/RefreshButton";
+import { Icon } from "../../components/Icon";
 
 export const dynamic = "force-dynamic";
 
@@ -16,19 +23,19 @@ function startOf(d: Date, k: "day" | "week" | "month"): Date {
   return x;
 }
 
-async function windowStats(from: Date) {
+async function windowStats(from: Date, scope:{shopId:string|null}) {
   const [all, paid, failed, rejected] = await Promise.all([
     prisma.printJob.aggregate({
       _count: { _all: true },
       _sum: { price: true, pagesPrinted: true },
-      where: { printStatus: "COMPLETED", completedAt: { gte: from } },
+      where: { ...scope, simulation: false, printStatus: "COMPLETED", completedAt: { gte: from } },
     }),
     prisma.printJob.aggregate({
       _sum: { price: true },
-      where: { printStatus: "COMPLETED", paymentStatus: "PAID", completedAt: { gte: from } },
+      where: { ...scope, simulation: false, printStatus: "COMPLETED", paymentStatus: "PAID", completedAt: { gte: from } },
     }),
-    prisma.printJob.count({ where: { printStatus: "FAILED", failedAt: { gte: from } } }),
-    prisma.printJob.count({ where: { printStatus: "REJECTED", rejectedAt: { gte: from } } }),
+    prisma.printJob.count({ where: { ...scope, simulation: false, printStatus: "FAILED", failedAt: { gte: from } } }),
+    prisma.printJob.count({ where: { ...scope, simulation: false, printStatus: "REJECTED", rejectedAt: { gte: from } } }),
   ]);
   return {
     completed: all._count._all ?? 0,
@@ -41,15 +48,17 @@ async function windowStats(from: Date) {
 }
 
 function rupees(paise: number): string {
-  return `₹${(paise / 100).toFixed(2)}`;
+  return formatPrice(paise ?? 0);
 }
 
 export default async function ReportsPage() {
+  const owner=await getOwnerFromCookies();if(!owner)redirect("/shops");
+  const scope=ownerScope(owner);
   const now = new Date();
   const [day, week, month] = await Promise.all([
-    windowStats(startOf(now, "day")),
-    windowStats(startOf(now, "week")),
-    windowStats(startOf(now, "month")),
+    windowStats(startOf(now, "day"),scope),
+    windowStats(startOf(now, "week"),scope),
+    windowStats(startOf(now, "month"),scope),
   ]);
 
   const rows = [
@@ -58,41 +67,11 @@ export default async function ReportsPage() {
     { label: "This month", s: month },
   ];
 
-  return (
-    <main className="max-w-5xl mx-auto p-8">
-      <h1 className="text-xl font-semibold mb-6">Reports</h1>
-      <div className="border border-gray-200 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium">Window</th>
-              <th className="text-left px-4 py-3 font-medium">Completed</th>
-              <th className="text-left px-4 py-3 font-medium">Pages</th>
-              <th className="text-left px-4 py-3 font-medium">Sales (recorded)</th>
-              <th className="text-left px-4 py-3 font-medium">Sales (collected)</th>
-              <th className="text-left px-4 py-3 font-medium">Failed</th>
-              <th className="text-left px-4 py-3 font-medium">Rejected</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {rows.map(({ label, s }) => (
-              <tr key={label}>
-                <td className="px-4 py-3 font-medium">{label}</td>
-                <td className="px-4 py-3">{s.completed}</td>
-                <td className="px-4 py-3">{s.pages}</td>
-                <td className="px-4 py-3">{rupees(s.recorded)}</td>
-                <td className="px-4 py-3">{rupees(s.collected)}</td>
-                <td className="px-4 py-3">{s.failed}</td>
-                <td className="px-4 py-3">{s.rejected}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="text-xs text-gray-500 mt-3">
-        "Recorded" counts completed jobs' <code>price</code>. "Collected" counts jobs whose
-        <code> paymentStatus=PAID</code>. Pending or failed jobs are excluded from revenue.
-      </p>
-    </main>
-  );
+  return <>
+    <PageHeading eyebrow="A LITTLE BUSINESS CLARITY" title="Reports" description="A straightforward look at recorded activity across your print jobs."><RefreshButton/></PageHeading>
+    <div className="report-cards">{rows.map(({ label, s }) => <section className="panel report-card" key={label}><h2>{label}</h2><div className="report-amount">{rupees(s.recorded)}</div><p>Recorded value of completed jobs</p><div className="report-card-footer"><span><strong>{s.completed}</strong> completed</span><span><strong>{s.pages}</strong> pages reported</span></div></section>)}</div>
+    <section className="panel"><div className="panel-head"><div><h2>Activity breakdown</h2><p>Completed jobs, recorded value and exceptions.</p></div><Icon name="chart" style={{ color: "var(--muted)" }}/></div><div className="table-scroll reports-scroll" tabIndex={0} role="region" aria-label="Report table, scroll horizontally on small screens"><table className="data-table reports-table"><caption className="sr-only">Print activity for today, this week and this month</caption><thead><tr>{["Period", "Completed", "Reported pages", "Recorded sales", "Collected sales", "Failed", "Rejected"].map((label) => <th scope="col" key={label}>{label}</th>)}</tr></thead><tbody>{rows.map(({ label, s }) => <tr key={label}><td><strong>{label}</strong></td><td>{s.completed}</td><td>{s.pages}</td><td className="job-price">{rupees(s.recorded)}</td><td>{rupees(s.collected)}</td><td>{s.failed}</td><td>{s.rejected}</td></tr>)}</tbody></table></div></section>
+    <div className="reports-notes"><section className="panel panel-body"><h3>Recorded vs. collected</h3><p>Recorded sales sum the stored price of completed jobs. Collected sales include only completed jobs marked paid. Payment collection is not integrated, so these values do not represent a cash ledger.</p></section><section className="panel panel-body"><h3>About these numbers</h3><p>Periods follow the server’s timezone. Page totals include only counts reported by the agent and may be incomplete. Use Refresh for the latest recorded data.</p></section></div>
+    <div style={{ marginTop: 20 }}><Notice>No payment gateway is connected. These reports summarize job records; they are not payment or accounting statements.</Notice></div>
+  </>;
 }

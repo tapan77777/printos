@@ -14,23 +14,38 @@
     "prisma:migrate": "prisma migrate dev --schema=../../prisma/schema.prisma",
     "prisma:deploy": "prisma migrate deploy --schema=../../prisma/schema.prisma",
     "seed:printer": "node scripts/seed-printer.mjs",
-    "hash:password": "node scripts/hash-password.mjs"
+    "hash:password": "node scripts/hash-password.mjs",
+    "test:tenant-postgres": "node scripts/test-tenant-postgres.mjs",
+    "auth:check": "node scripts/check-auth-config.mjs",
+    "storage:check": "node scripts/check-storage-config.mjs"
   },
   "dependencies": {
-    "next": "^14.2.0",
+    "@prisma/client": "^5.18.0",
+    "better-auth": "1.7.12",
+    "next": "15.5.28",
+    "pdf-lib": "^1.17.1",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0",
-    "@prisma/client": "^5.18.0"
+    "react-dom": "^18.3.0"
   },
   "devDependencies": {
-    "typescript": "^5.5.0",
-    "@types/node": "^20.14.0",
+    "@electric-sql/pglite": "^0.5.11",
+    "@types/node": "22.19.1",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
-    "tailwindcss": "^3.4.0",
-    "postcss": "^8.4.0",
+    "@types/react-test-renderer": "^18.3.1",
     "autoprefixer": "^10.4.0",
+    "postcss": "^8.5.31",
     "prisma": "^5.18.0",
-    "vitest": "^2.1.0"
+    "react-test-renderer": "^18.3.1",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.5.0",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "postcss": "$postcss"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

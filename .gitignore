@@ -49,3 +49,22 @@ yarn-error.log*
 # Vitest / Vite caches
 .vite/
 **/.vite/
+
+# Private, durable agent journals and downloaded PDFs
+.printos-agent/
+**/.printos-agent/
+
+# Isolated Next.js development output (production builds still use .next/)
+.next-dev/
+**/.next-dev/
+
+# Isolated development runtime, config, generated PDFs and build output
+.printos-dev/
+
+# Private database backups (never commit database dumps or row snapshots)
+.printos-backups/
+
+# Desktop staging, installers and local verification output
+apps/desktop/resources/
+apps/desktop/release/
+apps/desktop/.review/

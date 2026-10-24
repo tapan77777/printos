@@ -1,0 +1,8 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {assertStorageReady,inspectStorage} from './rollout-storage.mjs';
+const valid=()=>({bucket:{id:'printos-documents',name:'printos-documents',public:false,file_size_limit:'26214400',allowed_mime_types:['application/pdf']},rls:true,policy:{policyname:'printos_documents_client_deny',permissive:'RESTRICTIVE',roles:['anon','authenticated'],cmd:'ALL',qual:"(bucket_id <> 'printos-documents'::text)",with_check:"(bucket_id <> 'printos-documents'::text)"}});
+test('accepts exact managed Storage configuration without ownership',()=>assertStorageReady(valid()));
+const changes={missingBucket:s=>s.bucket=null,publicBucket:s=>s.bucket.public=true,wrongLimit:s=>s.bucket.file_size_limit='25000000',extraMime:s=>s.bucket.allowed_mime_types.push('text/plain'),missingPolicy:s=>s.policy=null,permissive:s=>s.policy.permissive='PERMISSIVE',rlsDisabled:s=>s.rls=false,wrongRoles:s=>s.policy.roles=['anon'],extraRole:s=>s.policy.roles.push('public'),selectOnly:s=>s.policy.cmd='SELECT',broadRead:s=>s.policy.qual='true',broadWrite:s=>s.policy.with_check='true',wrongBucket:s=>s.policy.qual="(bucket_id <> 'another'::text)",injectedExpression:s=>s.policy.qual="(bucket_id <> 'printos-documents'::text) OR true"};
+for(const [name,change] of Object.entries(changes))test('rejects '+name,()=>{const s=valid();change(s);assert.throws(()=>assertStorageReady(s))});
+test('inspection performs only SELECT queries and handles an absent bucket',async()=>{const queries=[];const state=await inspectStorage({$queryRawUnsafe:async sql=>{queries.push(sql);return []}});assert.deepEqual(state,{bucket:null,policy:null,rls:false});assert.equal(queries.length,3);assert.ok(queries.every(q=>q.startsWith('SELECT ')));});

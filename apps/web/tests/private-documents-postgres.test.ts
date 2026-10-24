@@ -1,0 +1,58 @@
+import {it,expect,vi} from 'vitest';
+import {PrismaClient} from '@prisma/client';
+import {NextRequest} from 'next/server';
+import {PDFDocument} from 'pdf-lib';
+import {documentService,documentHash} from '../lib/documents';
+import {FixtureStorage} from './fixtures/privateStorage';
+const context=vi.hoisted(()=>({storage:null as any,owner:null as any,agent:null as any}));
+vi.mock('@/lib/privateStorage',async original=>({...await original<typeof import('../lib/privateStorage')>(),privateStorage:()=>context.storage}));
+vi.mock('fs/promises',async original=>({...await original<typeof import('node:fs/promises')>(),writeFile:()=>{throw Error('Cloud paths must not write local PDF files');}}));
+vi.mock('@/lib/session',()=>({getOwnerFromRequest:async()=>context.owner}));
+vi.mock('@/lib/agentAuth',async original=>({...await original<typeof import('../lib/agentAuth')>(),getAgentIdentity:async()=>context.agent}));
+const target=process.env.PRINTOS_DISPOSABLE_DATABASE;
+it.skipIf(!target)('private document upload, pricing, scoped downloads, expiry and safe retention with actual PostgreSQL',async()=>{
+ const url=new URL(target!);if(url.hostname!=='localhost'||!url.searchParams.get('host')?.includes('printos-tenant-pg-'))throw Error('Disposable fixture database required');
+ vi.stubEnv('PRINTOS_DOCUMENT_STORAGE','supabase');const storage=new FixtureStorage();context.storage=storage;let clock=new Date();const db=new PrismaClient({datasources:{db:{url:target!}}});const svc=documentService(db,storage,()=>clock);
+ try{
+ await db.organization.createMany({data:[{id:'doc-shop-a',name:'Docs A',slug:'doc-shop-a'},{id:'doc-shop-b',name:'Docs B',slug:'doc-shop-b'}]});
+ await db.printer.createMany({data:[{id:'doc-pa',shopId:'doc-shop-a',deviceId:'DOC-A',name:'A'},{id:'doc-pb',shopId:'doc-shop-b',deviceId:'DOC-B',name:'B'},{id:'doc-legacy',deviceId:'DOC-OLD',name:'Legacy'}]});
+ await db.shopRateCard.create({data:{id:'doc-rates',shopId:'doc-shop-a',minimumPaise:0,rules:[{paperSize:'A4',colorMode:'BW',duplex:false,basis:'PAGE',unitPaise:233}]}});
+ const pdf=await PDFDocument.create();for(let i=0;i<5;i++)pdf.addPage();const bytes=Buffer.from(await pdf.save());
+ const grant=await svc.begin('DOC-A',bytes.length);const d=await db.storedDocument.findUniqueOrThrow({where:{id:grant.documentId}});expect(d.tokenHash).toBe(documentHash(grant.documentToken));expect(d.tokenHash).not.toContain(grant.documentToken);storage.objects.set(d.uploadKey,bytes);
+ await expect(svc.finalize(d.id,'wrong-token')).rejects.toMatchObject({status:404});expect((await svc.finalize(d.id,grant.documentToken)).pageCount).toBe(5);expect((await svc.finalize(d.id,grant.documentToken)).pageCount).toBe(5);
+ const ready=await db.storedDocument.findUniqueOrThrow({where:{id:d.id}});expect(ready.sha256).toBe(documentHash(bytes));expect(storage.objects.get(d.objectKey)).toEqual(bytes);
+ storage.objects.set(d.uploadKey,Buffer.from('mutated quarantine cannot affect canonical bytes'));
+ const form=new FormData();form.set('copies','2');await expect(svc.upload(d.id,grant.documentToken,'DOC-B',form)).rejects.toMatchObject({status:404});
+ const {POST:quote}=await import('../app/api/quotes/route');const {POST:submit}=await import('../app/api/jobs/route');
+ const body={documentId:d.id,printerId:'DOC-A',copies:2,colorMode:'BW',paperSize:'A4',duplex:false,pageRange:'1-3'};
+ const request=(path:string,data:any,token=grant.documentToken)=>new NextRequest('http://localhost:3999'+path,{method:'POST',headers:{'Content-Type':'application/json','x-printos-document-token':token},body:JSON.stringify(data)});
+ const qres=await quote(request('/api/quotes',body));expect(qres.status).toBe(200);const q=await qres.json();expect(q.price).toBe(1398);
+ expect((await submit(request('/api/jobs',{...body,quoteKey:'stale'}))).status).toBe(409);
+ const response=await submit(request('/api/jobs',{...body,quoteKey:q.quoteKey}));expect(response.status).toBe(200);const receipt=await response.json();const job=await db.printJob.findUniqueOrThrow({where:{id:receipt.jobId}});expect(job.fileId).toBe('cloud:'+d.id);expect(job.price).toBe(1398);expect((job.pricingSnapshot as any).price).toBe(1398);
+ expect((await submit(request('/api/jobs',{...body,quoteKey:q.quoteKey}))).status).toBe(410);expect(await db.printJob.count({where:{fileId:job.fileId}})).toBe(1);
+ const {GET:file,DELETE:remove}=await import('../app/api/jobs/[id]/file/route');const params={params:Promise.resolve({id:job.id})};const fileReq=(headers:Record<string,string>={},preview=false)=>new NextRequest('http://localhost:3999/api/jobs/'+job.id+'/file'+(preview?'?preview=1':''),{headers});
+ context.owner=null;context.agent=null;expect((await file(fileReq(),params)).status).toBe(401);expect((await file(fileReq({'x-printos-customer-session':'wrong'}),params)).status).toBe(404);
+ context.owner={shopId:'doc-shop-b',role:'owner'};expect((await file(fileReq({},true),params)).status).toBe(404);context.owner={shopId:'doc-shop-a',role:'staff'};expect((await file(fileReq({},true),params)).status).toBe(307);expect((await remove(new NextRequest('http://localhost/api/jobs/x/file',{method:'DELETE'}),params)).status).toBe(403);
+ context.owner=null;const download=await file(fileReq({'x-printos-customer-session':receipt.customerSessionId,'x-printos-download':'manifest-v1'}),params);expect(download.status).toBe(200);const manifest=await download.json();expect(manifest.sha256).toBe(documentHash(bytes));expect(manifest.sizeBytes).toBe(bytes.length);expect(Date.parse(manifest.expiresAt)-Date.now()).toBeLessThanOrEqual(60000);
+ const attempt='b3714b56-8541-4a1b-8ae5-cd8f3d53e9bd';context.agent={id:'doc-agent',shopId:'doc-shop-b',printerDeviceId:'DOC-B',mode:'cups',processingEnabled:true};expect((await file(fileReq({'x-printos-attempt':attempt,'x-printos-download':'manifest-v1'}),params)).status).toBe(403);
+ await db.desktopDevice.create({data:{id:'doc-agent',shopId:'doc-shop-a',printerId:'doc-pa',label:'Fixture',mode:'windows',publicKey:'fixture',confirmedAt:new Date(),localPrinterIdentifier:'a'.repeat(64),rendererSha256:'b'.repeat(64),configurationConfirmedAt:new Date()}});await db.deviceCredential.create({data:{id:'doc-agent-credential',deviceId:'doc-agent',tokenHash:'d'.repeat(64),expiresAt:new Date(Date.now()+600000)}});await db.desktopDevice.update({where:{id:'doc-agent'},data:{processingEnabled:true}});
+ await db.printJob.update({where:{id:job.id},data:{printStatus:'DOWNLOADING',attemptId:attempt,claimedBy:'doc-agent',claimExpiresAt:new Date(Date.now()+60000)}});context.agent={id:'doc-agent',shopId:'doc-shop-a',printerDeviceId:'DOC-A',mode:'cups',processingEnabled:true};expect((await file(fileReq({'x-printos-attempt':attempt,'x-printos-download':'manifest-v1'}),params)).status).toBe(200);
+ context.agent.processingEnabled=false;expect((await file(fileReq({'x-printos-attempt':attempt,'x-printos-download':'manifest-v1'}),params)).status).toBe(403);context.agent=null;
+ await expect(svc.markDelete(job.id,'doc-shop-b')).rejects.toMatchObject({status:404});await expect(svc.markDelete(job.id,'doc-shop-a')).rejects.toMatchObject({status:409});await db.printJob.update({where:{id:job.id},data:{printStatus:'RECONCILIATION_REQUIRED'}});expect((await svc.retention('doc-shop-a',false)).deleted).toBe(0);await expect(svc.markDelete(job.id,'doc-shop-a')).rejects.toMatchObject({status:409});
+ await db.printJob.update({where:{id:job.id},data:{printStatus:'COMPLETED',completedAt:new Date()}});
+ expect((await svc.retention('doc-shop-a',true)).scheduled).toBe(1);expect((await db.storedDocument.findUniqueOrThrow({where:{id:d.id}})).retentionUntil).toBeNull();await svc.retention('doc-shop-a',false);expect((await db.storedDocument.findUniqueOrThrow({where:{id:d.id}})).retentionUntil).not.toBeNull();
+ clock=new Date(clock.getTime()+8*86400000);storage.failDelete=true;await expect(svc.retention('doc-shop-a',false)).rejects.toThrow();expect((await db.storedDocument.findUniqueOrThrow({where:{id:d.id}})).status).toBe('DELETING');storage.failDelete=false;expect((await svc.retention('doc-shop-a',false)).deleted).toBe(1);expect(storage.objects.has(d.objectKey)).toBe(false);expect(storage.objects.has(d.uploadKey)).toBe(false);expect((await db.printJob.findUniqueOrThrow({where:{id:job.id}})).price).toBe(1398);
+ expect((await file(fileReq({'x-printos-customer-session':receipt.customerSessionId}),params)).status).toBe(410);
+ const expired=await svc.begin('DOC-A',bytes.length);clock=new Date(clock.getTime()+31*60000);await expect(svc.finalize(expired.documentId,expired.documentToken)).rejects.toMatchObject({status:410});
+ const invalid=await svc.begin('DOC-B',5);const bad=await db.storedDocument.findUniqueOrThrow({where:{id:invalid.documentId}});storage.objects.set(bad.uploadKey,Buffer.from('bogus'));await expect(svc.finalize(bad.id,invalid.documentToken)).rejects.toMatchObject({status:415});expect(storage.objects.has(bad.objectKey)).toBe(false);await expect(svc.begin('DOC-OLD',10)).rejects.toMatchObject({status:404});await expect(svc.begin('DOC-A',26214401)).rejects.toMatchObject({status:413});
+ const checksummed=await svc.begin('DOC-A',bytes.length);const tamper=await db.storedDocument.findUniqueOrThrow({where:{id:checksummed.documentId}});storage.objects.set(tamper.uploadKey,bytes);await svc.finalize(tamper.id,checksummed.documentToken);storage.objects.set(tamper.objectKey,Buffer.from('tampered'));await expect(svc.upload(tamper.id,checksummed.documentToken,'DOC-A',form)).rejects.toThrow('checksum');
+
+ const early=await svc.begin('DOC-B',bytes.length);const earlyDoc=await db.storedDocument.findUniqueOrThrow({where:{id:early.documentId}});storage.objects.set(earlyDoc.uploadKey,bytes);await svc.finalize(earlyDoc.id,early.documentToken);
+ const earlyJob=await db.printJob.create({data:{id:'early-deletion-fixture',shopId:'doc-shop-b',printerId:'doc-pb',fileId:'cloud:'+earlyDoc.id,customerSessionId:'fixture',printStatus:'COMPLETED',price:777}});await db.$transaction(tx=>svc.attach(tx,earlyDoc,earlyJob.id));
+ expect((await svc.markDelete(earlyJob.id,'doc-shop-b')).deleted).toBe(false);expect(storage.objects.has(earlyDoc.objectKey)).toBe(false);expect(storage.objects.has(earlyDoc.uploadKey)).toBe(true);
+ clock=new Date(clock.getTime()+126*60000);expect((await svc.retention('doc-shop-b',false)).deleted).toBeGreaterThanOrEqual(1);expect(storage.objects.has(earlyDoc.uploadKey)).toBe(false);expect((await db.printJob.findUniqueOrThrow({where:{id:earlyJob.id}})).price).toBe(777);
+
+ const held=await svc.begin('DOC-B',bytes.length);const heldDoc=await db.storedDocument.findUniqueOrThrow({where:{id:held.documentId}});storage.objects.set(heldDoc.uploadKey,bytes);await svc.finalize(heldDoc.id,held.documentToken);const heldJob=await db.printJob.create({data:{id:'active-retention-fixture',shopId:'doc-shop-b',printerId:'doc-pb',fileId:'cloud:'+heldDoc.id,customerSessionId:'fixture',printStatus:'APPROVED',price:999}});await db.$transaction(tx=>svc.attach(tx,heldDoc,heldJob.id));clock=new Date(clock.getTime()+126*60000);await svc.retention('doc-shop-b',false);expect(storage.objects.has(heldDoc.uploadKey)).toBe(false);expect(storage.objects.has(heldDoc.objectKey)).toBe(true);expect((await db.storedDocument.findUniqueOrThrow({where:{id:heldDoc.id}})).status).toBe('READY');await expect(svc.markDelete(heldJob.id,'doc-shop-b')).rejects.toMatchObject({status:409});
+ await expect(db.storedDocument.update({where:{id:tamper.id},data:{shopId:'doc-shop-b'}})).rejects.toThrow();await expect(db.storedDocument.update({where:{id:tamper.id},data:{sha256:'a'.repeat(64)}})).rejects.toThrow();
+ }finally{await db.$disconnect();vi.unstubAllEnvs();}
+},30000);

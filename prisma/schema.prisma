@@ -19,6 +19,10 @@ enum ConnectionType {
 }
 
 model Printer {
+  shopId String?
+  shop Organization? @relation(fields: [shopId], references: [id], onDelete: Restrict)
+  @@unique([id, shopId])
+  @@index([shopId])
   id             String         @id @default(cuid())
   name           String
   deviceId       String         @unique
@@ -27,6 +31,11 @@ model Printer {
   connectionType ConnectionType @default(LAPTOP_AGENT)
   capabilities   Json           @default("{\"colorModes\":[\"BW\"],\"paperSizes\":[\"A4\"],\"duplex\":false}")
   lastHeartbeat  DateTime?
+  simulationOnly Boolean        @default(false)
+  agentHealth    AgentHealth[]
+  desktopDevices DesktopDevice[]
+  pairingChallenges DevicePairing[]
+  documents      StoredDocument[]
   jobs           PrintJob[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
@@ -52,6 +61,7 @@ enum PrintStatus {
   CANCELLED
   REFUNDED
   EXPIRED
+  RECONCILIATION_REQUIRED
 }
 
 enum PaymentStatus {
@@ -63,6 +73,9 @@ enum PaymentStatus {
 }
 
 model PrintJob {
+  shopId String?
+  shop Organization? @relation(fields: [shopId], references: [id], onDelete: Restrict)
+  @@index([shopId, createdAt])
   id                String        @id @default(cuid())
   printerId         String
   printer           Printer       @relation(fields: [printerId], references: [id])
@@ -75,6 +88,8 @@ model PrintJob {
   duplex            Boolean       @default(false)
   pageCount         Int?
   pagesPrinted      Int?
+  document StoredDocument?
+  pricingSnapshot   Json?
   price             Int           @default(0)
   paymentStatus     PaymentStatus @default(NOT_REQUIRED)
   printStatus       PrintStatus   @default(QUEUED)
@@ -84,6 +99,13 @@ model PrintJob {
   claimedAt         DateTime?
   claimedBy         String?
   claimExpiresAt    DateTime?
+  attemptId         String?       @unique
+  submissionAuthorizedAt DateTime?
+  lastAgentEventId   String?
+  lastAgentEventHash String?
+  reconciledAt      DateTime?
+  reconciliationNote String?
+  simulation        Boolean       @default(false)
   cupsJobId         String?
   agentError        String?
   createdAt         DateTime      @default(now())
@@ -93,4 +115,221 @@ model PrintJob {
 
   @@index([printerId, printStatus])
   @@index([printStatus, claimExpiresAt])
+}
+
+model AgentHealth {
+  agentId          String   @id
+  printerId        String
+  printer          Printer  @relation(fields: [printerId], references: [id])
+  version          String
+  operatingSystem  String
+  mode             String
+  processingState  String
+  printerAvailable Boolean?
+  lastHeartbeat    DateTime
+
+  @@index([printerId, lastHeartbeat])
+}
+
+
+// Better Auth core and organization plugin. Historical rows remain unassigned.
+model User {
+  id String @id
+  name String
+  email String @unique
+  emailVerified Boolean @default(false)
+  image String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessions Session[]
+  accounts Account[]
+  members Member[]
+  invitations Invitation[]
+}
+
+model Session {
+  id String @id
+  expiresAt DateTime
+  token String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId String
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  activeOrganizationId String?
+  @@index([userId])
+}
+
+model Account {
+  id String @id
+  accountId String
+  providerId String
+  userId String
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  accessToken String?
+  refreshToken String?
+  idToken String?
+  accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope String?
+  password String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([providerId,accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id String @id
+  identifier String
+  value String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([identifier])
+}
+
+model RateLimit {
+  id String @id
+  key String @unique
+  count Int
+  lastRequest BigInt
+}
+
+model Organization {
+  id String @id
+  name String
+  slug String @unique
+  logo String?
+  metadata String?
+  createdAt DateTime @default(now())
+  members Member[]
+  invitations Invitation[]
+  printers Printer[]
+  jobs PrintJob[]
+  documents StoredDocument[]
+  rateCards ShopRateCard[]
+  devices DesktopDevice[]
+  pairings DevicePairing[]
+  @@map("Shop")
+}
+
+model Member {
+  id String @id
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Cascade)
+  userId String
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  role String
+  createdAt DateTime @default(now())
+  @@unique([organizationId,userId])
+  @@index([userId])
+  @@map("ShopMembership")
+}
+
+model Invitation {
+  id String @id
+  organizationId String
+  organization Organization @relation(fields:[organizationId],references:[id],onDelete:Cascade)
+  email String
+  role String?
+  status String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  inviterId String
+  inviter User @relation(fields:[inviterId],references:[id],onDelete:Cascade)
+  @@index([organizationId,email])
+  @@map("ShopInvitation")
+}
+
+
+// Enrollment is distinct from permission to process print jobs.
+model DesktopDevice {
+  id String @id
+  shopId String
+  shop Organization @relation(fields:[shopId],references:[id],onDelete:Restrict)
+  printerId String
+  printer Printer @relation(fields:[printerId],references:[id],onDelete:Restrict)
+  label String
+  publicKey String
+  mode String
+  confirmedAt DateTime?
+  processingEnabled Boolean @default(false)
+  localPrinterIdentifier String?
+  rendererSha256 String?
+  configurationConfirmedAt DateTime?
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  credentials DeviceCredential[]
+  @@index([shopId,createdAt])
+}
+
+model DeviceCredential {
+  id String @id
+  deviceId String
+  device DesktopDevice @relation(fields:[deviceId],references:[id],onDelete:Restrict)
+  tokenHash String @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([deviceId])
+}
+
+model DevicePairing {
+  id String @id
+  label String
+  publicKey String
+  nonce String
+  codeHash String
+  mode String
+  expiresAt DateTime
+  approvalAttempts Int @default(0)
+  approvedAt DateTime?
+  approvedBy String?
+  shopId String?
+  shop Organization? @relation(fields:[shopId],references:[id],onDelete:Restrict)
+  printerId String?
+  printer Printer? @relation(fields:[printerId],references:[id],onDelete:Restrict)
+  consumedAt DateTime?
+  deviceId String?
+  createdAt DateTime @default(now())
+  @@index([expiresAt])
+}
+
+model ShopRateCard {
+ id String @id
+ shopId String
+ shop Organization @relation(fields:[shopId],references:[id],onDelete:Restrict)
+ rules Json
+ minimumPaise Int
+ createdAt DateTime @default(now())
+ @@index([shopId,createdAt])
+}
+
+// Server-owned metadata; bearer secrets and document names are never stored here.
+model StoredDocument {
+ id String @id
+ shopId String
+ shop Organization @relation(fields:[shopId],references:[id],onDelete:Restrict)
+ printerId String
+ printer Printer @relation(fields:[printerId],references:[id],onDelete:Restrict)
+ jobId String? @unique
+ job PrintJob? @relation(fields:[jobId],references:[id],onDelete:Restrict)
+ tokenHash String
+ storageNamespace String
+ uploadKey String @unique
+ objectKey String @unique
+ expectedBytes Int
+ sha256 String?
+ pageCount Int?
+ status String @default("UPLOADING")
+ expiresAt DateTime
+ uploadGrantExpiresAt DateTime
+ quarantineDeletedAt DateTime?
+ retentionUntil DateTime?
+ deletedAt DateTime?
+ createdAt DateTime @default(now())
+ @@index([shopId,status,createdAt])
+ @@index([uploadGrantExpiresAt,quarantineDeletedAt])
 }

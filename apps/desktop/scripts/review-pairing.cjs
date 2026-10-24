@@ -1,0 +1,51 @@
+// Real Electron + loopback-only synthetic enrollment. No real cloud or OS keychain writes.
+const {_electron:electron}=require('playwright');const {createServer}=require('node:http');const {mkdtemp,mkdir,readFile,writeFile}=require('node:fs/promises');const path=require('node:path');const os=require('node:os');const crypto=require('node:crypto');const assert=require('node:assert/strict');
+(async()=>{
+ const profile=await mkdtemp(path.join(os.tmpdir(),'printos-desktop-review-'));const output=path.resolve(__dirname,'../../../docs/phase-2e2-verification/desktop');await mkdir(output,{recursive:true});
+ const id='ab573d33-dea3-44ac-ae9c-56174b900c1e',nonce='fixture-server-nonce',token='pda_'+'a'.repeat(43);let publicKey,approved=false,consumed=false,confirmed=false;const paths=[];let processing=false,printerIdentifier=null,job=null,authorizations=0;
+ const server=createServer(async(req,res)=>{
+  paths.push(req.url);const chunks=[];for await(const chunk of req)chunks.push(chunk);const body=chunks.length?JSON.parse(Buffer.concat(chunks).toString()):{};res.setHeader('Content-Type','application/json');
+  if(req.url==='/api/devices/pairing'&&req.method==='POST'){publicKey=body.publicKey;res.end(JSON.stringify({id,nonce,code:'A123456789',expiresAt:new Date(Date.now()+600000).toISOString()}));return;}
+  if(req.url===`/api/devices/pairing/${id}/approve`){approved=true;res.end('{"approved":true}');return;}
+  if(req.url.endsWith('/poll')||req.url.endsWith('/consume')){const op=req.url.endsWith('/poll')?'poll':'consume';const valid=crypto.verify(null,Buffer.from(`PrintOS-pair-v1\n${id}\n${nonce}\n${op}`),crypto.createPublicKey({key:Buffer.from(publicKey,'base64'),format:'der',type:'spki'}),Buffer.from(body.signature,'base64'));if(!valid){res.writeHead(401);res.end('{}');return;}if(op==='poll'){res.end(JSON.stringify({approved}));return;}if(!approved||consumed){res.writeHead(409);res.end('{}');return;}consumed=true;res.end(JSON.stringify({deviceId:id,token,shopId:'fixture-shop',printerDeviceId:'FIXTURE-MOCK',mode:'mock',confirmed:false,expiresAt:new Date(Date.now()+600000).toISOString()}));return;}
+  if(req.url==='/api/devices/confirm'){assert.equal(req.headers.authorization,`Bearer ${token}`);confirmed=true;res.end(JSON.stringify({confirmed:true,deviceId:id,shopId:'fixture-shop',printerDeviceId:'FIXTURE-MOCK',processingEnabled:false}));return;}
+  if(req.url==='/api/devices/self'){assert.equal(confirmed,true);res.end(JSON.stringify({deviceId:id,shopId:'fixture-shop',printerDeviceId:'FIXTURE-MOCK',processingEnabled:processing,localPrinterIdentifier:printerIdentifier}));return;}
+  if(req.url==='/api/devices/configuration'){assert.equal(req.headers.authorization,`Bearer ${token}`);printerIdentifier=body.printerIdentifier;res.end('{"configured":true}');return;}
+  if(req.url===`/api/devices/${id}/activation`){processing=body.enabled===true;res.end(JSON.stringify({processingEnabled:processing}));return;}
+  if(req.url==='/api/agent/heartbeat'){res.end('{"acknowledged":true}');return;}
+  if(req.url==='/api/agent/recovery'){res.end('{"jobs":[]}');return;}
+  if(req.url==='/api/jobs/claim'){assert.equal(req.headers.authorization,`Bearer ${token}`);assert.equal(req.headers['x-printos-printer-identity'],printerIdentifier);if(job&&job.printStatus==='COMPLETED'&&job.attemptId!==body.attemptId){res.end('{"jobs":[]}');return;}if(!job)job={id:'fixture-live-job',attemptId:body.attemptId,printStatus:'DOWNLOADING',copies:1,colorMode:'BW',paperSize:'A4',duplex:false,pageRange:'all',cupsJobId:null,submissionAuthorizedAt:null,printer:{deviceId:'FIXTURE-MOCK'}};res.end(JSON.stringify({jobs:[job],leaseExpiresAt:new Date(Date.now()+120000).toISOString()}));return;}
+  if(req.url==='/api/jobs/fixture-live-job/file'){res.setHeader('Content-Type','application/pdf');res.end('%PDF-1.7 synthetic mock-only document');return;}
+  if(req.url==='/api/jobs/fixture-live-job/status'){if(body.operation==='authorize'){authorizations++;job.submissionAuthorizedAt=new Date().toISOString();}if(body.printStatus)job.printStatus=body.printStatus;res.end(JSON.stringify({acknowledged:true,attemptId:job.attemptId,eventId:body.eventId,printStatus:job.printStatus,leaseExpiresAt:new Date(Date.now()+120000).toISOString()}));return;}
+  res.setHeader('Content-Type','text/html');res.end('<html><body><h1>Safe mock owner approval</h1><p>No real shop, account or printer is used.</p></body></html>');
+ });await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const origin=`http://127.0.0.1:${server.address().port}`;let app;
+ try{
+ app=await electron.launch({executablePath:require('electron'),args:[path.resolve(__dirname,'..')],env:{...process.env,PRINTOS_DESKTOP_REVIEW:'1',PRINTOS_DESKTOP_REVIEW_DIR:profile},timeout:30000});const page=await app.firstWindow();await page.waitForSelector('h2');
+ // Privileged test driver injects a test AES protector; production main has no mock-vault switch.
+ await app.evaluate(({safeStorage,session},origin)=>{
+  const c=process.getBuiltinModule('node:crypto');const key=c.randomBytes(32);
+  safeStorage.isAsyncEncryptionAvailable=async()=>true;
+  safeStorage.encryptStringAsync=async value=>{const iv=c.randomBytes(12),cipher=c.createCipheriv('aes-256-gcm',key,iv);return Buffer.concat([iv,cipher.update(value),cipher.final(),cipher.getAuthTag()]);};
+  safeStorage.decryptStringAsync=async value=>{const cipher=c.createDecipheriv('aes-256-gcm',key,value.subarray(0,12));cipher.setAuthTag(value.subarray(-16));return {result:Buffer.concat([cipher.update(value.subarray(12,-16)),cipher.final()]).toString(),shouldReEncrypt:false};};
+  session.fromPartition('persist:printos-cloud-v1').webRequest.onBeforeRequest((details,callback)=>{const url=new URL(details.url);callback({cancel:url.origin!==origin||!(details.method==='GET'||(details.method==='POST'&&url.pathname.startsWith('/api/devices/')))});});
+ },origin);
+ assert.equal((await page.evaluate(origin=>window.printos.request('origin',origin),origin)).ok,true);
+ await page.getByRole('button',{name:'Connect this computer',exact:true}).click();await page.locator('#computer-label').fill('Synthetic counter');await page.getByRole('button',{name:'Start secure pairing',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#screen').textContent.includes('A123456789'));
+ await page.getByRole('button',{name:'Open owner approval',exact:true}).click();
+ for(let i=0;i<50;i++){if(await app.evaluate(({webContents})=>webContents.getAllWebContents().some(c=>c.getURL().includes('/dashboard/devices?pair='))))break;await new Promise(resolve=>setTimeout(resolve,50));}
+ await app.evaluate(async({webContents},id)=>{const remote=webContents.getAllWebContents().find(c=>c.getURL().includes('/dashboard/devices?pair='));if(!remote)throw Error('Missing approval view');const value=await remote.executeJavaScript(`({bridge:typeof window.printos,node:typeof require})`);if(value.bridge!=='undefined'||value.node!=='undefined')throw Error('Remote privilege leak');await remote.executeJavaScript(`fetch('/api/devices/pairing/${id}/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(r=>r.json())`);},id);
+ await page.getByRole('button',{name:'Printers & setup',exact:true}).click();await page.getByRole('button',{name:'Check approval / device access',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#screen').textContent.includes('credential-stored'));
+ const state=await page.evaluate(()=>window.printos.request('state'));assert.equal(state.data.printingEnabled,false);assert.equal(JSON.stringify(state).includes(token),false);assert.equal(JSON.stringify(state).includes('PRIVATE KEY'),false);assert.equal(confirmed,true);
+ const bytes=await readFile(path.join(profile,'device-identity.enc'));assert.equal(bytes.includes(Buffer.from(token)),false);assert.equal(bytes.includes(Buffer.from('PRIVATE KEY')),false);assert.equal(paths.some(p=>p.startsWith('/api/jobs')),false);
+ await page.screenshot({path:path.join(output,'paired-mock-macos.png')});await writeFile(path.join(output,'pairing-results.json'),JSON.stringify({platform:'macOS',fixture:'loopback-only synthetic owner approval; AES test protector injected by privileged test driver',confirmed:true,plaintextCredentialAbsentFromDisk:true,credentialAbsentFromIpc:true,remoteNodeAndIpcAbsent:true,noJobRequests:true,printingEnabled:false,osKeychainUsed:false},null,2));console.log('Electron synthetic pairing review passed. No real accounts, cloud, OS keychain or printers used.');
+ assert.equal((await page.evaluate(()=>window.printos.request('agent-start'))).ok,false);
+ assert.equal((await page.evaluate(()=>window.printos.request('agent-prepare'))).ok,true);
+ await page.evaluate(()=>window.printos.request('navigate','/dashboard/devices'));
+ await app.evaluate(async({webContents},id)=>{const remote=webContents.getAllWebContents().find(c=>c.getURL().includes('/dashboard/devices'));await remote.executeJavaScript(`fetch('/api/devices/${id}/activation',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"enabled":true}'}).then(r=>r.json())`);},id);
+ assert.equal((await page.evaluate(()=>window.printos.request('agent-start'))).ok,true);
+ const until=Date.now()+45000;while(Date.now()<until&&job?.printStatus!=='COMPLETED')await new Promise(r=>setTimeout(r,100));assert.equal(job?.printStatus,'COMPLETED');assert.equal(authorizations,1);
+ assert.equal((await page.evaluate(()=>window.printos.request('agent-stop'))).ok,true);const final=await page.evaluate(()=>window.printos.request('state'));assert.equal(final.data.printingEnabled,false);assert.equal(JSON.stringify(final).includes(token),false);
+ const mvp=path.resolve(__dirname,'../../../docs/mvp-verification');await mkdir(mvp,{recursive:true});await writeFile(path.join(mvp,'electron-live-mock.json'),JSON.stringify({enrollment:true,requiresExplicitActivation:true,sharedUtilityWorker:true,claimDownloadAckMockSubmitComplete:true,authorizations,stoppedSafely:true,secretsAbsentFromRenderer:true,externalDataChanged:false,physicalPrinting:false},null,2));console.log('Electron live workflow passed against an in-memory mock queue; no physical printing.');
+
+ }finally{if(app)await app.close();await new Promise(resolve=>server.close(resolve));}
+})().catch(e=>{console.error(e);process.exitCode=1;});

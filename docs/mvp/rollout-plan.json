@@ -1,0 +1,41 @@
+{
+  "project": "xkqetjzplwusogbrilja",
+  "files": [
+    {
+      "path": "prisma/migrations/20260813082625_init/migration.sql",
+      "sha256": "d2a61ad7388e4191d0384ff5397bd25d74ec834661e664d503250737aec4cc3d"
+    },
+    {
+      "path": "prisma/migrations/20261013000000_approval_flow/migration.sql",
+      "sha256": "1565406d47af946034d5516ff54c96ecda9059c6e9a2a19eaca09d668958f3bc"
+    },
+    {
+      "path": "prisma/migrations/20261023000000_reliable_attempts/migration.sql",
+      "sha256": "c3a31d12b78224a9495874f98b3e8f96d86054e4e6db2940dfde69f391df71ea"
+    },
+    {
+      "path": "prisma/migrations/20261023010000_tenant_accounts/migration.sql",
+      "sha256": "dfaea87c193b9b6349a9252a2a17ed10feb6cfda1f2223e4b4da8e1cb3f7f3af"
+    },
+    {
+      "path": "prisma/migrations/20261023020000_device_enrollment/migration.sql",
+      "sha256": "aab1f8fd0ead0e815655aa659ff53c87cbd019c9cd16b0d9f5b8d3696a8a72ee"
+    },
+    {
+      "path": "prisma/migrations/20261023030000_shop_pricing/migration.sql",
+      "sha256": "44c54c097cb6a6bc6a591635741b0e8ad77dc7f9195a979a1f215246e2f1b452"
+    },
+    {
+      "path": "prisma/migrations/20261023040000_private_documents/migration.sql",
+      "sha256": "d29f48cc2d62c3fc7ddfdc3defbffde3dc77d54f9b6361c152fd2aed81e7315e"
+    },
+    {
+      "path": "prisma/migrations/20261024000000_mvp_agent_activation/migration.sql",
+      "sha256": "733f724c79a8327e9ea4068c7714b9d675763490c31d24142a625c5b0fdf8139"
+    },
+    {
+      "path": "docs/config/supabase-private-documents.sql",
+      "sha256": "3907439c9d3120085ffed0c561b6e3c7082f0c3a49ea6c2fbc3a921b6ee21b49"
+    }
+  ]
+}

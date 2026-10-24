@@ -35,10 +35,11 @@ export function parseOptions(form: FormData): { ok: true; value: UploadOptions }
   }
 
   const duplexRaw = String(form.get("duplex") ?? "false").toLowerCase();
+  if (!["true", "false", "1", "0"].includes(duplexRaw)) return { ok: false, error: "duplex must be true or false" };
   const duplex = duplexRaw === "true" || duplexRaw === "1";
 
-  const pageRange = String(form.get("pageRange") ?? "all").slice(0, 64);
-  if (!/^(all|\d+(-\d+)?(,\d+(-\d+)?)*)$/.test(pageRange)) {
+  const pageRange = String(form.get("pageRange") ?? "all").trim();
+  if (pageRange.length > 64 || !/^(all|\d+(-\d+)?(,\d+(-\d+)?)*)$/.test(pageRange)) {
     return { ok: false, error: `pageRange must be "all" or like "1,3-5"` };
   }
 

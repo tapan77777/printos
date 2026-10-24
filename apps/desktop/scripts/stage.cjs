@@ -1,0 +1,10 @@
+const {execFileSync}=require('node:child_process');
+const {cpSync,mkdirSync,existsSync}=require('node:fs');
+const path=require('node:path');
+const agent=path.resolve(__dirname,'../../agent');
+execFileSync(process.execPath,[path.join(agent,'node_modules/typescript/bin/tsc')],{cwd:agent,stdio:'inherit'});
+const target=path.resolve(__dirname,'../resources/agent');mkdirSync(target,{recursive:true});
+cpSync(path.join(agent,'dist'),path.join(target,'dist'),{recursive:true});
+cpSync(path.join(agent,'windows'),path.join(target,'windows'),{recursive:true});
+for(const file of ['dist/core/Engine.js','dist/core/Journal.js','dist/MockPrintDevice.js','windows/spooler.ps1'])if(!existsSync(path.join(target,file)))throw Error('Agent staging incomplete');
+console.log('Staged compiled shared agent and read-only Windows bridge. No environment files or documents copied.');

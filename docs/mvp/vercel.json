@@ -1,0 +1,8 @@
+{
+  "framework": "nextjs",
+  "installCommand": "npm ci --include=dev && npm run prisma:generate",
+  "buildCommand": "npm run build",
+  "git": {
+    "deploymentEnabled": false
+  }
+}

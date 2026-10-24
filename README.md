@@ -1,4 +1,26 @@
-# PrintOS — V0 (Phase 1: owner-approval workflow)
+
+Phase 2C adds a Windows adapter with explicit queue selection and conservative spooler
+reconciliation. See [Windows setup, limitations and physical acceptance](docs/phase-2c.md).
+Windows execution and physical printing remain unverified; do not enable unattended use
+until the checklist passes.
+# PrintOS — owner-approved printing
+
+Phase 2E.1 adds verified accounts, shops/memberships, tenant authorization and tested
+Next.js/security upgrades. See [the staged implementation and exact migration rollout](docs/phase-2e.md).
+The approved atomic migration is applied to the confirmed Supabase test project; see the
+[verification report](docs/rollout/phase-2e1-final-report.md). Global owner login is retired;
+new authentication configuration remains pending.
+Device pairing, shop rate cards and live desktop activation remain separate pending stages.
+
+Phase 2D adds an Electron desktop workspace with cloud dashboard access, local printer
+setup and isolated no-print diagnostics. See [desktop setup and release gates](docs/phase-2d.md).
+The unsigned Windows x64 installer has been cross-built and statically inspected on macOS;
+Windows execution and secure device pairing remain pending. Real desktop printing is disabled.
+
+Phase 2A adds a fenced, journaled printing engine. **Read [the rollout and recovery
+protocol](docs/phase-2a.md) before starting or upgrading an agent.** The additive
+migration is not deployed by development or tests. Existing unscoped agents are
+deliberately denied; server, migration and agent require a coordinated rollout.
 
 Self-service printing for existing shops. Customer scans a QR for the shop's
 printer, uploads a PDF, picks options, and submits the job. The shop owner
@@ -104,12 +126,12 @@ Steps:
 7. Paper should come out of the printer.
 8. Phone status page should transition `APPROVED → PRINTING → COMPLETED`.
 
-**What "COMPLETED" means here:** the agent captured the CUPS job id from
-`lp`'s stdout and then watched `lpstat -o` until the job left the queue and
-`lpstat -W completed -o` reported it finished. If CUPS never confirms
-completion within `CUPS_COMPLETION_TIMEOUT_SEC` (default 300 s), the job is
-marked `FAILED` with an "unverified completion" error — we never mark a job
-`COMPLETED` just because `lp` returned 0.
+**What "COMPLETED" means:** the CUPS adapter receives structured IPP terminal
+state 9 without `job-completed-with-errors`. Cancelled/aborted spool jobs are
+failures. Missing history, timeouts and uncertain submissions require
+`RECONCILIATION_REQUIRED`, never automatic resubmission. Spooler completion is
+not a guarantee that usable paper reached the customer. Real printer acceptance
+has not yet been performed.
 
 ## State machine
 
@@ -123,21 +145,24 @@ QUEUED ──approve──▶ APPROVED ──agent claims──▶ DOWNLOADING �
   the printer.
 - The agent only picks up `APPROVED` jobs. It can only transition
   `DOWNLOADING / PRINTING / COMPLETED / FAILED`. It cannot approve, reject,
-  or queue.
-- Claims are leased (`claimedAt` + `claimExpiresAt`). A second agent cannot
-  double-print the same job while the lease is live.
+  or queue. They can report RECONCILIATION_REQUIRED for uncertain outcomes.
+- Claims bind an immutable attempt to a scoped agent. The lease gates download
+  and submission authorization; expiry never automatically requeues a claimed job.
+- A durable local SUBMITTING marker precedes the OS call. Unknown outcomes become
+  RECONCILIATION_REQUIRED and are never automatically printed again.
 
 ## Known gaps (not addressed in Phase 1)
 
 - No payment gateway. Dev mode marks every job `paymentStatus=NOT_REQUIRED`.
-- No automated page-count extraction from the PDF yet (price multiplier uses
-  the PDF page count only if the owner records it manually).
-- No printer-online heartbeat write-back (agent only logs; `Printer.status`
-  is not updated by the agent yet).
-- `tmp-uploads/` is cleaned only when a job is `FAILED` mid-flight by the
-  agent; completed-job cleanup is not yet scheduled.
+- New uploads now use parsed PDF page counts and normalized page ranges; see
+  [Phase 1A](docs/phase-1a.md) for pricing, preview, API compatibility and limits.
+- Agent health is written through an authenticated heartbeat. Availability is
+  derived with a 45-second freshness window; see Phase 2A for its limits.
+- Server `tmp-uploads/` has no scheduled retention cleanup. Failed database
+  creation now removes the newly written file; agent cleanup only removes its local copy.
 - No audit log of owner approvals/rejections beyond the fields on `PrintJob`.
-- `apps/` has its own nested `.git` — pick one canonical repo before pushing.
+- No full historical event ledger yet; server stores the last idempotent event
+  and the agent archives terminal attempt records locally.
 
 ## Scripts
 
@@ -151,3 +176,13 @@ QUEUED ──approve──▶ APPROVED ──agent claims──▶ DOWNLOADING �
 | `npm run prisma:deploy` | Apply migrations (safe for prod) |
 | `npm run seed:printer -- <deviceId> <name> [location]` | Register a printer |
 | `npm run hash:password -- '<password>'` | Produce an `OWNER_PASSWORD_HASH` |
+
+Phase 2E.2 staged work: see [authentication readiness and secure device enrollment](docs/phase-2e2.md). The new device migration is pending approval; live processing remains blocked. Run `npm run auth:check --prefix apps/web` for a secret-free local configuration report.
+
+Phase 2E.3: [shop rates and immutable quotes](docs/phase-2e3.md) are implemented with a pending additive migration. Do not run the new Prisma job model against the unmigrated Supabase project; follow the documented approval/backup rollout first.
+
+Phase 2E.4: [private cloud PDF storage](docs/phase-2e4.md) adds direct private uploads, authorized downloads and retention. Schema/bucket provisioning is pending approval; no existing PDFs are moved. Use `npm run storage:check --prefix apps/web` for a secret-free configuration check.
+
+Current private-test handoff: [MVP integration, exact rollout commands, Vercel setup and Windows instructions](docs/mvp/README.md). This supersedes earlier diagnostic-only desktop notes. Installer 0.1.1 includes explicit live-agent controls; cloud rollout and actual Windows/physical acceptance remain approval/manual gates.
+
+Deployment readiness: the approved four MVP migrations are now applied to Supabase TEST project `xkqetjzplwusogbrilja`; private Storage provisioning is verified. Earlier pending-migration statements describe historical phase status. Use [the current Vercel checklist](docs/mvp/vercel-deployment.md). Authentication/email/Storage runtime secrets still require manual configuration. Git-triggered Vercel deployments are disabled until separate deployment approval.

@@ -15,7 +15,7 @@ try {
     console.log(`Printer ${deviceId} already exists (id=${existing.id})`);
     process.exit(0);
   }
-  const p = await prisma.printer.create({ data: { deviceId, name, location: location ?? null } });
+  const p = await prisma.printer.create({ data: { deviceId, name, location: location === "--simulation" ? null : location ?? null, simulationOnly: process.argv.includes("--simulation") } });
   console.log(`Created printer id=${p.id} deviceId=${p.deviceId} name=${p.name}`);
 } finally {
   await prisma.$disconnect();

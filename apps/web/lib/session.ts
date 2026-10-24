@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
+import type { OwnerAccess } from "./tenantAccess";
 import type { NextRequest } from "next/server";
 
 const COOKIE_NAME = "printos_session";
@@ -66,12 +67,32 @@ export function sessionCookieOptions() {
 
 export const SESSION_COOKIE_NAME = COOKIE_NAME;
 
-export function getOwnerFromCookies(): SessionPayload | null {
-  const token = cookies().get(COOKIE_NAME)?.value;
-  return decodeSession(token);
+// Legacy HMAC helpers remain only for historical compatibility tests. They no
+// longer authorize application requests: accounts must use revocable DB sessions.
+export async function accountSession(requestHeaders: Headers) {
+  if (process.env.PRINTOS_AUTH_MODE !== "tenant") return null;
+  const {getAuth} = await import("./auth");
+  const auth=getAuth();
+  if(!auth)return null;
+  return auth.api.getSession({headers:requestHeaders});
 }
 
-export function getOwnerFromRequest(req: NextRequest): SessionPayload | null {
-  const token = req.cookies.get(COOKIE_NAME)?.value;
-  return decodeSession(token);
+export async function resolveOwner(requestHeaders: Headers): Promise<OwnerAccess|null> {
+  const session=await accountSession(requestHeaders);
+  if(!session?.user.emailVerified || !session.session.activeOrganizationId)return null;
+  const {prisma}=await import("./prisma");
+  const membership=await prisma.member.findUnique({where:{organizationId_userId:{organizationId:session.session.activeOrganizationId,userId:session.user.id}}});
+  if(!membership || !["owner","staff"].includes(membership.role))return null;
+  return {userId:session.user.id,shopId:membership.organizationId,role:membership.role as "owner"|"staff"};
+}
+
+export async function getOwnerFromCookies(): Promise<OwnerAccess|null> {
+  return resolveOwner(new Headers(await headers()));
+}
+export async function getOwnerFromRequest(req: NextRequest): Promise<OwnerAccess|null> {
+  if(!["GET","HEAD"].includes(req.method)){
+    const expected=process.env.BETTER_AUTH_URL;
+    if(!expected || req.headers.get("origin")!==new URL(expected).origin)return null;
+  }
+  return resolveOwner(req.headers);
 }

@@ -1,71 +1,73 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { parseOptions, isPdfBuffer, MAX_UPLOAD_BYTES } from "@/lib/validate";
-import { computePricePaise } from "@/lib/pricing";
-
+import { readUploadQuote, UploadError } from "@/lib/uploadQuote";
+import { authoritativeQuote } from "@/lib/shopPricing";
+import { StorageError } from "@/lib/privateStorage";
+import { documents } from "@/lib/documentHttp";
+export const maxDuration = 60;
 const UPLOAD_DIR = path.join(process.cwd(), "tmp-uploads");
-
 export async function POST(req: NextRequest) {
-  const contentLength = Number(req.headers.get("content-length") ?? "0");
-  if (contentLength > 0 && contentLength > MAX_UPLOAD_BYTES * 1.1) {
-    return NextResponse.json({ error: "File too large" }, { status: 413 });
-  }
-
-  const form = await req.formData().catch(() => null);
-  if (!form) return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
-
-  const file = form.get("file");
-  const printerId = String(form.get("printerId") ?? "").trim();
-  if (!(file instanceof File) || !printerId) {
-    return NextResponse.json({ error: "Missing file or printerId" }, { status: 400 });
-  }
-
-  if (file.size === 0) {
-    return NextResponse.json({ error: "Empty file" }, { status: 400 });
-  }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    return NextResponse.json({ error: `File exceeds ${MAX_UPLOAD_BYTES} bytes` }, { status: 413 });
-  }
-
-  const opts = parseOptions(form);
-  if (!opts.ok) return NextResponse.json({ error: opts.error }, { status: 400 });
-
-  const printer = await prisma.printer.findUnique({ where: { deviceId: printerId } });
-  if (!printer) return NextResponse.json({ error: "Printer not found" }, { status: 404 });
-
-  const bytes = Buffer.from(await file.arrayBuffer());
-  if (!isPdfBuffer(bytes)) {
-    return NextResponse.json({ error: "Only PDF files are accepted" }, { status: 415 });
-  }
-
-  const jobId = randomUUID();
-  const storedName = `${jobId}.pdf`;
-
-  await mkdir(UPLOAD_DIR, { recursive: true });
-  await writeFile(path.join(UPLOAD_DIR, storedName), bytes);
-
-  const customerSessionId = randomUUID();
-  const price = computePricePaise(opts.value, null);
-
-  const job = await prisma.printJob.create({
-    data: {
-      id: jobId,
-      printerId: printer.id,
-      fileId: storedName,
-      customerSessionId,
-      copies: opts.value.copies,
-      colorMode: opts.value.colorMode,
-      pageRange: opts.value.pageRange,
-      paperSize: opts.value.paperSize,
-      duplex: opts.value.duplex,
-      price,
-      printStatus: "QUEUED",
-      paymentStatus: "NOT_REQUIRED",
-    },
-  });
-
-  return NextResponse.json({ jobId: job.id, customerSessionId, price });
+    let upload;
+    try {
+        upload = await readUploadQuote(req);
+    }
+    catch (err) {
+        if (err instanceof UploadError || err instanceof StorageError)
+            return NextResponse.json({ error: err.message }, { status: err.status });
+        throw err;
+    }
+    const { bytes, printerId, options } = upload;
+    const printer = await prisma.printer.findUnique({ where: { deviceId: printerId } });
+    if (!printer)
+        return NextResponse.json({ error: "Printer not found" }, { status: 404 });
+    const jobId = randomUUID();
+    const document = "document" in upload ? upload.document : null;
+    const storedName = document ? `cloud:${document.id}` : `${jobId}.pdf`;
+    if (!document) {
+        await mkdir(UPLOAD_DIR, { recursive: true });
+        await writeFile(path.join(UPLOAD_DIR, storedName), bytes);
+    }
+    const customerSessionId = randomUUID();
+    let quote: any;
+    let job;
+    try {
+        job = await prisma.$transaction(async (tx) => {
+            quote = await authoritativeQuote(tx, printer, upload);
+            if (printer.shopId && upload.submittedQuoteKey !== quote.quoteKey)
+                throw new UploadError("Prices or options changed. Review a fresh quote before submitting.", 409);
+            const created = await tx.printJob.create({
+                data: {
+                    shopId: printer.shopId,
+                    id: jobId,
+                    printerId: printer.id,
+                    fileId: storedName,
+                    customerSessionId,
+                    copies: options.copies,
+                    colorMode: options.colorMode,
+                    pageRange: options.pageRange,
+                    paperSize: options.paperSize,
+                    duplex: options.duplex,
+                    price: quote.price,
+                    pageCount: quote.pageCount,
+                    pricingSnapshot: quote.pricingSnapshot ?? undefined,
+                    printStatus: "QUEUED",
+                    paymentStatus: "NOT_REQUIRED",
+                },
+            });
+            if (document)
+                await documents().attach(tx, document, created.id);
+            return created;
+        });
+    }
+    catch (err) {
+        if (!document)
+            await unlink(path.join(UPLOAD_DIR, storedName)).catch(() => { });
+        if (err instanceof UploadError || err instanceof StorageError)
+            return NextResponse.json({ error: err.message }, { status: err.status });
+        throw err;
+    }
+    return NextResponse.json({ jobId: job.id, customerSessionId, price: quote.price, quote }, { headers: { "Cache-Control": "private, no-store" } });
 }

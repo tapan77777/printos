@@ -1,0 +1,88 @@
+{
+  "name": "printos-desktop",
+  "version": "0.1.1",
+  "private": true,
+  "description": "PrintOS desktop dashboard and isolated agent supervisor",
+  "author": "PrintOS",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "node scripts/icons.cjs && tsc && node scripts/stage.cjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/package.test.ts tests/policy.test.ts tests/supervisor.test.ts tests/pairing.test.ts tests/live.test.ts",
+    "start": "npm run build && electron .",
+    "package:mac": "npm run build && electron-builder --mac dir --publish never",
+    "package:win": "npm run build && electron-builder --win nsis --x64 --publish never",
+    "package:win:dir": "npm run build && electron-builder --win dir --x64 --publish never",
+    "test:electron": "node scripts/review.cjs && node scripts/review-pairing.cjs && node scripts/review-storage.cjs",
+    "inspect:artifacts": "node scripts/inspect-artifacts.cjs"
+  },
+  "dependencies": {
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/qrcode": "^1.5.5",
+    "electron": "45.0.0",
+    "electron-builder": "26.15.3",
+    "playwright": "1.64.1",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "build": {
+    "appId": "com.printos.desktop",
+    "productName": "PrintOS",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "ui/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/agent",
+        "to": "agent",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "requestedExecutionLevel": "asInvoker",
+      "icon": "ui/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": false
+    },
+    "mac": {
+      "target": "dir",
+      "category": "public.app-category.business"
+    },
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
+    }
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

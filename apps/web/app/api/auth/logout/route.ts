@@ -1,15 +1,3 @@
-import { NextResponse } from "next/server";
-import { sessionCookieOptions } from "@/lib/session";
-
-export async function POST() {
-  const opts = sessionCookieOptions();
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set(opts.name, "", {
-    httpOnly: opts.httpOnly,
-    sameSite: opts.sameSite,
-    secure: opts.secure,
-    path: opts.path,
-    maxAge: 0,
-  });
-  return res;
-}
+import {getAuth} from "@/lib/auth";
+import {NextResponse,type NextRequest} from "next/server";
+export async function POST(req:NextRequest){const auth=getAuth();if(!auth)return NextResponse.json({error:"Account service unavailable"},{status:503});return auth.handler(new Request(new URL("/api/account-auth/sign-out",req.url),{method:"POST",headers:req.headers}));}

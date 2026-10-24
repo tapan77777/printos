@@ -20,7 +20,7 @@ describe("computePricePaise", () => {
     const dup = computePricePaise({ ...base, duplex: true }, 10);
     expect(dup).toBeLessThan(simplex);
   });
-  it("defaults to 1 page when pageCount is null", () => {
-    expect(computePricePaise(base, null)).toBe(PRICE_PAISE.BW_PER_PAGE);
+  it("refuses to invent a price without page count", () => {
+    expect(() => computePricePaise(base, null)).toThrow("required");
   });
 });

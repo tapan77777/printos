@@ -1,10 +1,6 @@
+import Link from "next/link";
+import { Brand } from "./components/ui";
+import { Icon } from "./components/Icon";
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 text-center">
-      <h1 className="text-2xl font-semibold">PrintOS</h1>
-      <p className="text-gray-500 mt-2">
-        Scan a printer QR code to get started. Example: <code>/p/printer-001</code>
-      </p>
-    </main>
-  );
+  return <div className="entry-page"><header className="entry-header"><Brand/><Link href="/login" className="btn btn-secondary">Owner sign in<Icon name="arrow" size={15}/></Link></header><main id="main-content" className="entry-main"><p className="eyebrow">HELLO, PAPER.</p><h1>Big ideas.<br/>Meet the printed page.</h1><p>Your next print starts at the shop. Scan the printer’s QR code to upload your PDF and choose your print options.</p><div className="entry-qr"><Icon name="printer" size={37}/></div><div className="entry-note">At the counter? Look for your shop’s PrintOS QR code.<br/>It takes you straight to the right printer.</div></main><footer className="entry-footer">PrintOS · A simpler way from document to paper.</footer></div>;
 }

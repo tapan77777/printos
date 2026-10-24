@@ -1,0 +1,2 @@
+import { Skeleton } from "../components/ui";
+export default function Loading() { return <div role="status" aria-label="Loading workspace"><Skeleton className="skeleton-heading"/><div className="metric-grid">{[1,2,3,4].map((i) => <div className="panel metric" key={i}><Skeleton/><Skeleton className="skeleton-value"/><Skeleton/></div>)}</div><div className="panel">{[1,2,3,4].map((i) => <Skeleton className="skeleton-row" key={i}/>)}</div><span className="sr-only">Loading workspace…</span></div>; }
