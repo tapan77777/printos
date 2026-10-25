@@ -21,12 +21,13 @@ try{
  await writeFile(path.join(fixture,'app/api/account-auth/[...all]/route.ts'),`
 import {createAccountAuth} from ${JSON.stringify(path.join(web,'lib/auth'))};
 import {memoryAdapter} from "better-auth/adapters/memory";
+import {withRequestPerformance} from ${JSON.stringify(path.join(web,'lib/requestPerformance'))};
 const db={user:[],session:[],account:[],verification:[],rateLimit:[],organization:[],member:[],invitation:[]};
-let emails=0;
-const auth=createAccountAuth(memoryAdapter(db),async()=>{emails++;},${JSON.stringify(origin)},"isolated-http-fixture-secret-at-least-32-characters");
+let emails=0;let verificationUrl="";
+const auth=createAccountAuth(memoryAdapter(db),async(_to,_subject,url)=>{emails++;verificationUrl=url;},${JSON.stringify(origin)},"isolated-http-fixture-secret-at-least-32-characters");
 export const runtime="nodejs";
-export async function GET(request:Request){if(new URL(request.url).pathname.endsWith('/fixture-status'))return Response.json({users:db.user.length,emails});return auth.handler(request);}
-export async function POST(request:Request){return auth.handler(request);}
+export async function GET(request:Request){if(new URL(request.url).pathname.endsWith('/fixture-verify')){const result=await auth.handler(new Request(verificationUrl));return new Response(null,{status:result.status});}if(new URL(request.url).pathname.endsWith('/fixture-status'))return Response.json({users:db.user.length,emails});return withRequestPerformance("account",()=>auth.handler(request));}
+export async function POST(request:Request){return withRequestPerformance("account",()=>auth.handler(request));}
 `);
  // Environment is allowlisted: no credentials inherited and fixture has no .env.
  const env={PATH:process.env.PATH,HOME:process.env.HOME,TMPDIR:process.env.TMPDIR,NEXT_TELEMETRY_DISABLED:'1',DATABASE_URL:'postgresql://unused:unused@127.0.0.1:1/unused'};
@@ -38,9 +39,15 @@ export async function POST(request:Request){return auth.handler(request);}
  let r=await post({name:'HTTP Fixture',email:'fixture@example.test',password:'isolated-fixture-password'});
  assert.equal(r.status,200);const data=await r.json();assert.equal(data.user.emailVerified,false);assert.equal(data.token,undefined);
  assert.deepEqual(await(await fetch(origin+'/api/account-auth/fixture-status')).json(),{users:1,emails:1});
+ const verified=await fetch(origin+'/api/account-auth/fixture-verify',{redirect:'manual'});assert.ok([200,302].includes(verified.status));
+ const login=await fetch(origin+'/api/account-auth/sign-in/email',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify({email:'fixture@example.test',password:'isolated-fixture-password'})});assert.equal(login.status,200);
+ const cookie=login.headers.getSetCookie().map(value=>value.split(';')[0]).join('; ');
+ const created=await fetch(origin+'/api/account-auth/organization/create',{method:'POST',headers:{origin,'Content-Type':'application/json',cookie},body:JSON.stringify({name:'HTTP shop',slug:'http-fixture-shop',keepCurrentActiveOrganization:false,metadata:{printos:{orderingEnabled:true}}})});assert.equal(created.status,200);const shop=await created.json();assert.equal(shop.metadata.printos.orderingEnabled,false);
+ const session=await(await fetch(origin+'/api/account-auth/get-session',{headers:{cookie}})).json();assert.equal(session.session.activeOrganizationId,shop.id);
+ const bypass=await fetch(origin+'/api/account-auth/organization/update',{method:'POST',headers:{origin,'Content-Type':'application/json',cookie},body:JSON.stringify({organizationId:shop.id,data:{metadata:{printos:{orderingEnabled:true}}}})});assert.equal(bypass.status,400);
  r=await post({name:'x'.repeat(20000)});assert.equal(r.status,413);
  r=await post({}, {origin:'https://untrusted.invalid'});assert.equal(r.status,403);
  assert.deepEqual(await(await fetch(origin+'/api/account-auth/fixture-status')).json(),{users:1,emails:1});
- console.log('PASS: real Next.js HTTP registration 200, verification email captured, bearer token omitted, oversized body 413, foreign origin 403; all data in memory.');
+ console.log('PASS: real Next.js HTTP registration 200, verification email captured, bearer token omitted, oversized body 413, foreign origin 403; all data in memory. Shop creation selects the shop and forces ordering off; generic metadata bypass rejected.');
 }catch(error){console.error('HTTP integration failed:',error.message);console.error(output);process.exitCode=1;}
 finally{if(child&&child.exitCode===null){const exited=new Promise(resolve=>child.once('exit',resolve));child.kill('SIGTERM');await exited;}await rm(fixture,{recursive:true,force:true});}

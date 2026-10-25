@@ -1,0 +1,326 @@
+{
+  "scope": "Read-only production request metadata plus read-only local-to-Supabase probes; no accounts, shops or jobs created. No raw logs, SQL, credentials, cookies, user records or identifiers retained.",
+  "productionRegion": "iad1",
+  "databaseRegion": "ap-south-1 / Mumbai",
+  "requests": [
+    {
+      "path": "/api/admin/pricing",
+      "method": "POST",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 5330,
+      "serverMs": 5123,
+      "middlewareMs": 0,
+      "coldStartMs": 0
+    },
+    {
+      "path": "/api/admin/pricing",
+      "method": "GET",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 4588,
+      "serverMs": 4582,
+      "middlewareMs": 0,
+      "coldStartMs": 0
+    },
+    {
+      "path": "/dashboard/pricing",
+      "method": "GET",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 303,
+      "serverMs": 79,
+      "middlewareMs": 27,
+      "coldStartMs": 0
+    },
+    {
+      "path": "/api/admin/printers",
+      "method": "GET",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 5502,
+      "serverMs": 5344,
+      "middlewareMs": 0,
+      "coldStartMs": 0
+    },
+    {
+      "path": "/api/devices",
+      "method": "GET",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 6584,
+      "serverMs": 5983,
+      "middlewareMs": 0,
+      "coldStartMs": 361
+    },
+    {
+      "path": "/dashboard/devices",
+      "method": "GET",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 390,
+      "serverMs": 152,
+      "middlewareMs": 38,
+      "coldStartMs": 0
+    },
+    {
+      "path": "/dashboard/pricing",
+      "method": "GET",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 257,
+      "serverMs": 12,
+      "middlewareMs": 8,
+      "coldStartMs": 0
+    },
+    {
+      "path": "/dashboard/devices",
+      "method": "GET",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 273,
+      "serverMs": 12,
+      "middlewareMs": 9,
+      "coldStartMs": 0
+    },
+    {
+      "path": "/dashboard",
+      "method": "GET",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 16168,
+      "serverMs": 14862,
+      "middlewareMs": 492,
+      "coldStartMs": 364
+    },
+    {
+      "path": "/api/account-auth/organization/create",
+      "method": "POST",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 8770,
+      "serverMs": 8554,
+      "middlewareMs": 0,
+      "coldStartMs": 0
+    },
+    {
+      "path": "/api/account-auth/sign-in/email",
+      "method": "POST",
+      "status": 200,
+      "prefetch": false,
+      "requestMs": 6496,
+      "serverMs": 6278,
+      "middlewareMs": 0,
+      "coldStartMs": 0
+    }
+  ],
+  "registration": [
+    {
+      "path": "/api/account-auth/sign-up/email",
+      "status": 200,
+      "requestMs": 3743,
+      "serverMs": 3531,
+      "coldStartMs": 0,
+      "regions": [
+        "iad1"
+      ]
+    },
+    {
+      "path": "/api/account-auth/sign-up/email",
+      "status": 200,
+      "requestMs": 6612,
+      "serverMs": 6075,
+      "coldStartMs": 368,
+      "regions": [
+        "iad1"
+      ]
+    }
+  ],
+  "database": {
+    "source": "Mac to Mumbai, not Vercel DB spans",
+    "connections": [
+      {
+        "connection": "direct",
+        "fresh": [
+          {
+            "connectMs": 704,
+            "firstReadMs": 129,
+            "engineQueryMs": 119
+          },
+          {
+            "connectMs": 423,
+            "firstReadMs": 161,
+            "engineQueryMs": 160
+          },
+          {
+            "connectMs": 560,
+            "firstReadMs": 236,
+            "engineQueryMs": 234
+          }
+        ],
+        "warmSelectOne": {
+          "samples": [
+            109,
+            55,
+            54,
+            54,
+            54,
+            55,
+            58
+          ],
+          "median": 55,
+          "min": 54,
+          "max": 109
+        },
+        "queryProfiles": {
+          "pricingReadMs": 119,
+          "devicesReadMs": 111,
+          "printersReadMs": 114,
+          "dashboardEightQueryProxyMs": 881
+        },
+        "readonlyTransaction": {
+          "samples": [
+            287,
+            263,
+            234
+          ],
+          "median": 263,
+          "min": 234,
+          "max": 287
+        }
+      },
+      {
+        "connection": "transaction-pooler",
+        "fresh": [
+          {
+            "connectMs": 522,
+            "firstReadMs": 285,
+            "engineQueryMs": 56
+          },
+          {
+            "connectMs": 439,
+            "firstReadMs": 309,
+            "engineQueryMs": 62
+          },
+          {
+            "connectMs": 428,
+            "firstReadMs": 314,
+            "engineQueryMs": 71
+          }
+        ],
+        "warmSelectOne": {
+          "samples": [
+            316,
+            436,
+            303,
+            316,
+            366,
+            338,
+            325
+          ],
+          "median": 325,
+          "min": 303,
+          "max": 436
+        },
+        "queryProfiles": {
+          "pricingReadMs": 147,
+          "devicesReadMs": 125,
+          "printersReadMs": 124,
+          "dashboardEightQueryProxyMs": 1139
+        },
+        "readonlyTransaction": {
+          "samples": [
+            463,
+            448,
+            562
+          ],
+          "median": 463,
+          "min": 448,
+          "max": 562
+        }
+      }
+    ]
+  },
+  "browser": [
+    {
+      "route": "/login",
+      "width": 1440,
+      "finalRoute": "/login",
+      "dnsMs": 32,
+      "tcpAndTlsMs": 143,
+      "requestToFirstByteMs": 59,
+      "responseDownloadMs": 20,
+      "domContentLoadedMs": 735,
+      "loadMs": 788,
+      "firstContentfulPaintMs": 796,
+      "scriptResources": 7,
+      "scriptDurationSumMs": 2746,
+      "apiRequests": [],
+      "horizontalOverflow": false
+    },
+    {
+      "route": "/login",
+      "width": 1440,
+      "finalRoute": "/login",
+      "dnsMs": 3,
+      "tcpAndTlsMs": 144,
+      "requestToFirstByteMs": 73,
+      "responseDownloadMs": 9,
+      "domContentLoadedMs": 410,
+      "loadMs": 497,
+      "firstContentfulPaintMs": 416,
+      "scriptResources": 7,
+      "scriptDurationSumMs": 1286,
+      "apiRequests": [],
+      "horizontalOverflow": false
+    },
+    {
+      "route": "/register",
+      "width": 1440,
+      "finalRoute": "/register",
+      "dnsMs": 3,
+      "tcpAndTlsMs": 154,
+      "requestToFirstByteMs": 91,
+      "responseDownloadMs": 440,
+      "domContentLoadedMs": 812,
+      "loadMs": 1014,
+      "firstContentfulPaintMs": 820,
+      "scriptResources": 7,
+      "scriptDurationSumMs": 1607,
+      "apiRequests": [],
+      "horizontalOverflow": false
+    },
+    {
+      "route": "/shops",
+      "width": 1440,
+      "finalRoute": "/login",
+      "dnsMs": 0,
+      "tcpAndTlsMs": 0,
+      "requestToFirstByteMs": 64,
+      "responseDownloadMs": 9,
+      "domContentLoadedMs": 94,
+      "loadMs": 95,
+      "firstContentfulPaintMs": 108,
+      "scriptResources": 7,
+      "scriptDurationSumMs": 76,
+      "apiRequests": [],
+      "horizontalOverflow": false
+    },
+    {
+      "route": "/register",
+      "width": 390,
+      "finalRoute": "/register",
+      "dnsMs": 1,
+      "tcpAndTlsMs": 138,
+      "requestToFirstByteMs": 63,
+      "responseDownloadMs": 31,
+      "domContentLoadedMs": 335,
+      "loadMs": 438,
+      "firstContentfulPaintMs": 344,
+      "scriptResources": 7,
+      "scriptDurationSumMs": 783,
+      "apiRequests": [],
+      "horizontalOverflow": false
+    }
+  ]
+}

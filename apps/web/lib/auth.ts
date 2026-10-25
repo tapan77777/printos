@@ -1,3 +1,6 @@
+import {hasProtectedSetupMetadata, metadataObject, setupMetadata} from "./shopSetupState";
+import {measureStage} from "./requestPerformance";
+import {hashPassword, verifyPassword} from "better-auth/crypto";
 import {logAccountFailure} from "./authDiagnostic";
 import {accountResponse} from "./authResponse";
 import {accountRequest} from "./authBody";
@@ -10,24 +13,32 @@ import {prisma} from "./prisma";
 
 type Mail = (to:string,subject:string,url:string)=>Promise<void>;
 export async function sendAccountEmail(to:string,subject:string,url:string){
+ return measureStage("email",async()=>{
  const key=process.env.RESEND_API_KEY;const from=process.env.AUTH_EMAIL_FROM;
  if(!key||!from)throw Error("ACCOUNT_EMAIL_NOT_CONFIGURED");
  const response=await fetch("https://api.resend.com/emails",{method:"POST",redirect:"error",signal:AbortSignal.timeout(10000),headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify({from,to:[to],subject,text:`${subject}\n\n${url}\n\nIf you did not request this, ignore this message.`})});
  await response.body?.cancel();if(!response.ok)throw Object.assign(Error("ACCOUNT_EMAIL_DELIVERY_FAILED"),{providerStatus:response.status});
+ });
 }
 export function createAccountAuth(database:ReturnType<typeof prismaAdapter>, mail:Mail, origin:string, secret:string){
  const auth=betterAuth({
   logger:{level:"error",log:(level,_message,...args)=>{if(level==="error")logAccountFailure("better-auth",args);}},appName:"PrintOS",baseURL:origin,basePath:"/api/account-auth",secret,
   database, trustedOrigins:[origin],
   advanced:{cookiePrefix:"printos-account",useSecureCookies:new URL(origin).protocol==="https:",ipAddress:{ipAddressHeaders:process.env.PRINTOS_TRUST_PROXY==="true"?["x-real-ip"]:[]}},
-  emailAndPassword:{enabled:true,requireEmailVerification:true,autoSignIn:false,minPasswordLength:12,maxPasswordLength:128,revokeSessionsOnPasswordReset:true,resetPasswordTokenExpiresIn:900,
+  emailAndPassword:{password:{hash:password=>measureStage("hash",()=>hashPassword(password)),verify:data=>measureStage("hash",()=>verifyPassword(data))},enabled:true,requireEmailVerification:true,autoSignIn:false,minPasswordLength:12,maxPasswordLength:128,revokeSessionsOnPasswordReset:true,resetPasswordTokenExpiresIn:900,
    sendResetPassword:async({user,url})=>mail(user.email,"Reset your PrintOS password",url)},
   emailVerification:{sendOnSignUp:true,sendOnSignIn:true,expiresIn:3600,autoSignInAfterVerification:false,
    sendVerificationEmail:async({user,url})=>mail(user.email,"Verify your PrintOS email",url)},
   session:{expiresIn:60*60*12,updateAge:60*60,cookieCache:{enabled:false}},
   rateLimit:{enabled:true,storage:"database",window:60,max:60,customRules:{"/sign-in/email":{window:60,max:5},"/sign-up/email":{window:3600,max:5},"/request-password-reset":{window:3600,max:5}}},
   plugins:[organization({allowUserToCreateOrganization:user=>user.emailVerified,organizationHooks:{
-    beforeCreateOrganization:async({organization:o})=>{if(!o.name?.trim()||o.name.length>100||!o.slug||!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(o.slug)||o.slug.length<3||o.slug.length>60)throw new APIError("BAD_REQUEST",{message:"Valid shop name and identifier required."});},
+    beforeCreateOrganization:async({organization:o})=>{if(!o.name?.trim()||o.name.length>100||!o.slug||!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(o.slug)||o.slug.length<3||o.slug.length>60)throw new APIError("BAD_REQUEST",{message:"Valid shop name and identifier required."});
+      const raw=o.metadata;
+      const metadata=typeof raw==='string'?raw:JSON.stringify(raw??{});
+      const clean=metadataObject(metadata);delete clean.printos;
+      return {data:{...o,metadata:metadataObject(setupMetadata(JSON.stringify(clean),{orderingEnabled:false,intakePrinterId:null}))}};
+    },
+    beforeUpdateOrganization:async({organization:o})=>{if(hasProtectedSetupMetadata(o.metadata))throw new APIError("BAD_REQUEST",{message:"Use shop setup to change ordering settings."});if(o.metadata!==undefined)throw new APIError("BAD_REQUEST",{message:"Shop metadata is managed through setup."});},
     beforeCreateInvitation:async({invitation})=>{if(!["owner","staff"].includes(invitation.role))throw new APIError("BAD_REQUEST",{message:"Choose owner or staff."});},
     beforeUpdateMemberRole:async({newRole})=>{if(!["owner","staff"].includes(newRole))throw new APIError("BAD_REQUEST",{message:"Choose owner or staff."});},
     beforeAddMember:async({member})=>{if(!["owner","staff"].includes(member.role))throw new APIError("BAD_REQUEST",{message:"Choose owner or staff."});}

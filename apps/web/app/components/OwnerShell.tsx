@@ -6,7 +6,7 @@ import { Brand } from "./ui";
 import { accountClient } from "@/lib/auth-client";
 import { Icon } from "./Icon";
 
-const links = [{href:"/dashboard/pricing",label:"Pricing",icon:"jobs" as const},{href:"/dashboard/devices",label:"Devices & printers",icon:"printer" as const},{ href: "/dashboard/jobs", label: "Print jobs", icon: "jobs" as const }, { href: "/dashboard", label: "Overview", icon: "grid" as const }, { href: "/dashboard/reports", label: "Reports", icon: "chart" as const }];
+const links = [{href:"/dashboard/setup",label:"Shop setup",icon:"grid" as const},{href:"/dashboard/pricing",label:"Pricing",icon:"jobs" as const},{href:"/dashboard/devices",label:"Devices & printers",icon:"printer" as const},{ href: "/dashboard/jobs", label: "Print jobs", icon: "jobs" as const }, { href: "/dashboard", label: "Overview", icon: "grid" as const }, { href: "/dashboard/reports", label: "Reports", icon: "chart" as const }];
 export function OwnerShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [signingOut, setSigningOut] = useState(false);

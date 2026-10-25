@@ -4,5 +4,8 @@
   "buildCommand": "npm run build",
   "git": {
     "deploymentEnabled": false
-  }
+  },
+  "regions": [
+    "bom1"
+  ]
 }

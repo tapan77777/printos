@@ -4,6 +4,7 @@ import {beforeEach,it,expect,vi} from "vitest";
 const m=vi.hoisted(()=>({signup:vi.fn(),signin:vi.fn(),recovery:vi.fn()}));
 vi.mock("@/lib/auth-client",()=>({accountClient:{signUp:{email:m.signup},signIn:{email:m.signin},requestPasswordReset:m.recovery}}));
 vi.mock("next/link",()=>({default:({children,...props}:any)=>createElement("a",props,children)}));
+vi.mock("next/navigation",()=>({useRouter:()=>({push:vi.fn(),refresh:vi.fn(),replace:vi.fn()})}));
 import {AccountForm} from "../app/components/AccountForm";
 beforeEach(()=>vi.clearAllMocks());
 it("registration confirms email instructions, never fake verification or device pairing",async()=>{

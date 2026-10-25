@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { PDFDocument } from "pdf-lib";
-const mocks = vi.hoisted(() => ({ printer: vi.fn(), create: vi.fn(), mkdir: vi.fn(), write: vi.fn(), unlink: vi.fn() }));
-vi.mock("@/lib/prisma", () => ({ prisma: { printer: { findUnique: mocks.printer }, printJob: { create: mocks.create }, $queryRaw:vi.fn(),shopRateCard:{findFirst:async()=>({id:"rate-a",shopId:"shop-a",rules:[{paperSize:"A4",colorMode:"COLOUR",duplex:true,basis:"PAGE",unitPaise:450}],minimumPaise:0})},$transaction:async(fn:any)=>fn((await import("@/lib/prisma")).prisma) } }));
+const mocks = vi.hoisted(() => ({ ordering:vi.fn(), printer: vi.fn(), create: vi.fn(), mkdir: vi.fn(), write: vi.fn(), unlink: vi.fn() }));
+vi.mock("@/lib/prisma", () => ({ prisma: { organization:{findUnique:mocks.ordering}, printer: { findUnique: mocks.printer }, printJob: { create: mocks.create }, $queryRaw:vi.fn(),shopRateCard:{findFirst:async()=>({id:"rate-a",shopId:"shop-a",rules:[{paperSize:"A4",colorMode:"COLOUR",duplex:true,basis:"PAGE",unitPaise:450}],minimumPaise:0})},$transaction:async(fn:any)=>fn((await import("@/lib/prisma")).prisma) } }));
 vi.mock("fs/promises", () => ({ mkdir: mocks.mkdir, writeFile: mocks.write, unlink: mocks.unlink }));
 import { POST as quote } from "../app/api/quotes/route";
 import { POST as upload } from "../app/api/jobs/route";
@@ -16,7 +16,7 @@ async function request(range = "all", invalid = false,quoteKey="") {
   return new NextRequest("http://localhost/api/jobs", { method: "POST", body: form });
 }
 beforeEach(() => {
-  vi.resetAllMocks(); mocks.unlink.mockResolvedValue(undefined); mocks.printer.mockResolvedValue({ id: "printer", shopId:"shop-a" });
+  vi.resetAllMocks(); mocks.ordering.mockResolvedValue({metadata:'{"printos":{"orderingEnabled":true}}'}); mocks.unlink.mockResolvedValue(undefined); mocks.printer.mockResolvedValue({ id: "printer", shopId:"shop-a" });
   mocks.create.mockImplementation(async ({ data }) => data);
 });
 describe("quotes and upload contract (all writes mocked)", () => {
@@ -51,4 +51,9 @@ it('rejects missing or stale quote consent without creating a tenant job and cle
 });
 it('binds quote consent to the PDF and options rather than trusting supplied price',async()=>{
  const q=await(await quote(await request('1-2'))).json();expect((await upload(await request('1-3',false,q.quoteKey))).status).toBe(409);expect(mocks.create).not.toHaveBeenCalled();
+});
+
+it('rejects a direct job API submission when ordering is inactive, without creating a job',async()=>{
+ mocks.ordering.mockResolvedValue({metadata:'{}'});const response=await upload(await request('all',false,'stale-or-forged'));
+ expect(response.status).toBe(409);expect((await response.json()).error).toContain('not accepting orders');expect(mocks.create).not.toHaveBeenCalled();expect(mocks.unlink).toHaveBeenCalledOnce();
 });

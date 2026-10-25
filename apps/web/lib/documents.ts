@@ -1,3 +1,4 @@
+import { assertOrderingEnabled } from './ordering';
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { PrismaClient, Prisma, StoredDocument, PrintStatus } from '@prisma/client';
 import { countPdfPages } from './pdf';
@@ -13,7 +14,7 @@ export function documentService(db: PrismaClient, storage: PrivateStorage, now =
     async function scoped(id: string, token: string) { const d = await db.storedDocument.findUnique({ where: { id } }); if (!d || !validDocumentToken(token, d.tokenHash))
         throw new UploadError('Document not found', 404); if (d.storageNamespace !== storage.namespace)
         throw new UploadError("Document storage configuration changed", 503); if (d.expiresAt <= now() || d.jobId || ['DELETING', 'DELETED'].includes(d.status))
-        throw new UploadError('Document upload expired or already submitted', 410); return d; }
+        throw new UploadError('Document upload expired or already submitted', 410); await assertOrderingEnabled(db,d.shopId); return d; }
     async function purge(d: StoredDocument) {
         if (d.storageNamespace !== storage.namespace)
             throw new UploadError("Document storage configuration changed", 503);
@@ -31,12 +32,15 @@ export function documentService(db: PrismaClient, storage: PrivateStorage, now =
         async begin(printerDeviceId: string, expectedBytes: number) {
             if (!Number.isSafeInteger(expectedBytes) || expectedBytes < 1 || expectedBytes > MAX_UPLOAD_BYTES)
                 throw new UploadError('PDF exceeds the upload size limit', 413);
-            await storage.check();
             const printer = await db.printer.findUnique({ where: { deviceId: printerDeviceId } });
             if (!printer?.shopId)
                 throw new UploadError('A configured shop printer is required', 404);
+            await assertOrderingEnabled(db,printer.shopId);
+            await storage.check();
             const id = randomUUID(), token = 'pdu_' + randomBytes(32).toString('base64url'), prefix = documentHash(printer.shopId), date = now();
             const document = await db.$transaction(async (tx) => {
+                await tx.$queryRaw `SELECT id FROM "Shop" WHERE id=${printer.shopId} FOR UPDATE`;
+                await assertOrderingEnabled(tx,printer.shopId);
                 await tx.$queryRaw `SELECT id FROM "Printer" WHERE id=${printer.id} FOR UPDATE`;
                 const pending = await tx.storedDocument.count({ where: { printerId: printer.id, jobId: null, createdAt: { gt: new Date(date.getTime() - 3 * 3600000) }, status: { not: 'DELETED' } } });
                 if (pending >= 100)

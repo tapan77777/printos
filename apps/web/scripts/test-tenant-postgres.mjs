@@ -18,7 +18,7 @@ try{
  const url=`postgresql://printos_fixture@localhost:${port}/postgres?host=${encodeURIComponent(socket)}`;
  const env={...process.env,DATABASE_URL:url,PRINTOS_DISPOSABLE_DATABASE:url,PRINTOS_AUTH_MODE:'tenant',PRINTOS_DEVICE_ENROLLMENT:'enabled',BETTER_AUTH_URL:'http://localhost:3999',BETTER_AUTH_SECRET:'fixture-only-secret-'.repeat(4),RESEND_API_KEY:'never-used-fixture-key',AUTH_EMAIL_FROM:'fixture@example.test'};
  delete env.AGENT_TOKEN;delete env.AGENT_CREDENTIALS_JSON;
- const output=await run(process.execPath,[path.join(project,'node_modules/vitest/vitest.mjs'),'run','tests/tenant-postgres.test.ts','tests/device-pairing-postgres.test.ts','tests/shop-pricing-postgres.test.ts','tests/private-documents-postgres.test.ts','tests/mvp-activation-postgres.test.ts'],env);console.log(output);console.log('Disposable PostgreSQL adapter integration passed. Supabase was not accessed.');
+ const output=await run(process.execPath,[path.join(project,'node_modules/vitest/vitest.mjs'),'run','tests/tenant-postgres.test.ts','tests/device-pairing-postgres.test.ts','tests/shop-pricing-postgres.test.ts','tests/private-documents-postgres.test.ts','tests/mvp-activation-postgres.test.ts','tests/setup-postgres.test.ts'],env);console.log(output);console.log('Disposable PostgreSQL adapter integration passed. Supabase was not accessed.');
 }finally{
  if(started)await run(path.join(bin,'pg_ctl'),['-D',data,'-m','fast','-w','stop']);
  await rm(root,{recursive:true,force:true});

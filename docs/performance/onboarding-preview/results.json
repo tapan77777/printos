@@ -1,0 +1,15 @@
+{
+  "fixture": "isolated memory; external browser requests blocked",
+  "autoIdentifier": true,
+  "duplicateShopSubmitBlocked": true,
+  "noInitialPricingFetch": true,
+  "noRedundantSetupRefresh": true,
+  "qrDoesNotEnableOrdering": true,
+  "inactiveCustomerPage": true,
+  "pdfDownload": true,
+  "explicitEnableAndDisable": true,
+  "mobileNoOverflow": true,
+  "dashboardReminder": true,
+  "noInitialDeviceFetches": true,
+  "browserErrors": 0
+}

@@ -12,7 +12,7 @@ it.skipIf(!target)('real database scoped rate publishing, quote locking, snapsho
     const db = new PrismaClient({ datasources: { db: { url: target! } } });
     try {
         const a = 'rates-a', b = 'rates-b';
-        await db.organization.createMany({ data: [{ id: a, name: 'Rates A', slug: a }, { id: b, name: 'Rates B', slug: b }] });
+        await db.organization.createMany({ data: [{ id: a, name: 'Rates A', slug: a, metadata: '{"printos":{"orderingEnabled":true}}' }, { id: b, name: 'Rates B', slug: b, metadata: '{"printos":{"orderingEnabled":true}}' }] });
         await db.printer.createMany({ data: [{ id: 'rates-pa', name: 'A', deviceId: 'RATES-A', shopId: a }, { id: 'rates-pb', name: 'B', deviceId: 'RATES-B', shopId: b }, { id: 'rates-old', name: 'Legacy', deviceId: 'RATES-OLD' }] });
         const legacy = await db.printJob.create({ data: { id: 'rates-legacy', printerId: 'rates-old', fileId: 'fixture.pdf', customerSessionId: 'fixture', price: 12345 } });
         const api = await import('../app/api/admin/pricing/route');

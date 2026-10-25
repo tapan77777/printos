@@ -1,3 +1,4 @@
+import { assertOrderingEnabled } from './ordering';
 import { createHash } from 'node:crypto';
 import type { Prisma } from '@prisma/client';
 import { resolvePageRange, createQuote } from './pricing';
@@ -55,13 +56,15 @@ export async function authoritativeQuote(db: DB, printer: {
     };
     bytes: Buffer;
 }) {
+    // Quotes and submissions hold the same shop lock as ordering/rate changes.
+    if (printer.shopId) await db.$queryRaw `SELECT id FROM "Shop" WHERE id=${printer.shopId} FOR UPDATE`;
+    await assertOrderingEnabled(db,printer.shopId);
     if (!printer.shopId) {
         const legacy = createQuote(upload.options, upload.quote.pageCount);
         const snapshot = { schemaVersion: 1, currency: 'INR', source: 'LEGACY_DEFAULT_SCHEDULE', shopId: null, ...upload.options, ...legacy, basis: 'PAGE', unitPaise: legacy.perPagePaise, units: legacy.selectedPages * legacy.copies, minimumPaise: 0 };
         return { ...legacy, quoteKey: null, pricingSnapshot: snapshot };
     }
     // Rate edits and submissions lock the same shop row, preventing a stale-rate race.
-    await db.$queryRaw `SELECT id FROM "Shop" WHERE id=${printer.shopId} FOR UPDATE`;
     const card = await db.shopRateCard.findFirst({ where: { shopId: printer.shopId }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] });
     if (!card)
         throw new UploadError('This shop has not configured printing prices', 422);

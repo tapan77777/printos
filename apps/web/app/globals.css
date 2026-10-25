@@ -2396,3 +2396,31 @@ input[type=checkbox] {
   .mobile-owner-nav { overflow-x: auto; justify-content: flex-start; }
   .mobile-owner-nav a { flex: 0 0 auto; white-space: nowrap; }
 }
+
+/* Guided setup reuses the owner panels and controls. */
+.setup-flow { max-width: 960px; margin: 0 auto; }
+.setup-progress { list-style: none; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); padding: 0; gap: 12px; margin: 24px 0; }
+.setup-progress li { display: flex; align-items: center; gap: 8px; padding: 12px; border-bottom: 3px solid var(--line); color: var(--muted); font-size: 13px; }
+.setup-progress li span { flex: 0 0 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; }
+.setup-progress .current { border-color: var(--blue); color: var(--text); font-weight: 600; }
+.setup-progress .complete { color: var(--blue); }
+.setup-section { margin-bottom: 20px; }
+.setup-section h2, .setup-prices legend { margin-bottom: 12px; }
+.setup-section p { margin-bottom: 16px; line-height: 1.7; }
+.setup-prices { border: 0; padding: 0; min-width: 0; }
+.price-rule { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin: 16px 0; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.price-rule input,.price-rule select,.setup-minimum input { width: 100%; min-width: 0; }
+.setup-minimum { max-width: 260px; margin: 20px 0; }
+.setup-qr { display: flex; gap: 24px; align-items: center; }
+.setup-qr img { max-width: 100%; height: auto; }
+.setup-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+@media(max-width:640px) {
+ .setup-progress { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 4px; }
+ .setup-progress li { padding: 10px 4px; font-size: 12px; }
+ .price-rule { grid-template-columns: repeat(2,minmax(0,1fr)); }
+ .setup-qr { flex-direction: column; align-items: flex-start; }
+ .setup-actions .btn { width: 100%; }
+}
+@media(max-width:380px) { .price-rule { grid-template-columns: minmax(0,1fr); } }
+.setup-flow > .page-heading, .setup-pricing-heading { display: block; }
+.setup-flow > .page-heading h1, .setup-pricing-heading h1 { margin: 10px 0; overflow-wrap: anywhere; }

@@ -1,0 +1,27 @@
+{
+  "scope": "Mac to tested Mumbai pooler, read-only repeatable snapshot; not Vercel request latency",
+  "trials": [
+    {
+      "beforeQueries": 8,
+      "afterQueries": 1,
+      "beforeMs": 1075,
+      "afterMs": 145,
+      "totalsMatch": true
+    },
+    {
+      "beforeQueries": 8,
+      "afterQueries": 1,
+      "beforeMs": 1147,
+      "afterMs": 174,
+      "totalsMatch": true
+    },
+    {
+      "beforeQueries": 8,
+      "afterQueries": 1,
+      "beforeMs": 1557,
+      "afterMs": 652,
+      "totalsMatch": true
+    }
+  ],
+  "productionDataWritten": false
+}

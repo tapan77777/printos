@@ -1,3 +1,6 @@
+import { logAccountFailure } from "./authDiagnostic";
+import { cache } from "react";
+import { measureStage } from "./requestPerformance";
 import { createHmac, timingSafeEqual } from "crypto";
 import { headers } from "next/headers";
 import type { OwnerAccess } from "./tenantAccess";
@@ -86,13 +89,21 @@ export async function resolveOwner(requestHeaders: Headers): Promise<OwnerAccess
   return {userId:session.user.id,shopId:membership.organizationId,role:membership.role as "owner"|"staff"};
 }
 
-export async function getOwnerFromCookies(): Promise<OwnerAccess|null> {
-  return resolveOwner(new Headers(await headers()));
+// React cache is limited to one server render; later requests recheck DB sessions.
+const cacheServerRender: typeof cache = typeof cache === "function" ? cache : (fn => fn);
+export const getOwnerFromCookies = cacheServerRender(async (): Promise<OwnerAccess|null> => {
+  return measureStage("auth", () => resolveOwnerFromHeaders());
+});
+async function resolveOwnerFromHeaders() {
+  // Read Next request headers outside error sanitization: its render-control
+  // exceptions must propagate so private pages are never prerendered or cached.
+  const requestHeaders=new Headers(await headers());
+  try{return await resolveOwner(requestHeaders);}catch(error){logAccountFailure("handler",error);throw Error("Shop access is temporarily unavailable");}
 }
 export async function getOwnerFromRequest(req: NextRequest): Promise<OwnerAccess|null> {
   if(!["GET","HEAD"].includes(req.method)){
     const expected=process.env.BETTER_AUTH_URL;
     if(!expected || req.headers.get("origin")!==new URL(expected).origin)return null;
   }
-  return resolveOwner(req.headers);
+  return measureStage("auth", () => resolveOwner(req.headers));
 }

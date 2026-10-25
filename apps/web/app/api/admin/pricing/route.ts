@@ -1,3 +1,4 @@
+import { withRequestPerformance } from '@/lib/requestPerformance';
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
@@ -5,9 +6,9 @@ import { getOwnerFromRequest } from '@/lib/session';
 import { validateRateCard } from '@/lib/shopPricing';
 import { accountRequest } from '@/lib/authBody';
 import { UploadError } from '@/lib/uploadQuote';
-export async function GET(req: NextRequest) { const owner = await getOwnerFromRequest(req); if (!owner?.shopId)
+async function getPricing(req: NextRequest) { const owner = await getOwnerFromRequest(req); if (!owner?.shopId)
     return NextResponse.json({ error: 'Shop membership required' }, { status: 401 }); const card = await prisma.shopRateCard.findFirst({ where: { shopId: owner.shopId! }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] }); return NextResponse.json({ card, canEdit: owner.role === 'owner' }, { headers: { 'Cache-Control': 'private, no-store' } }); }
-export async function POST(req: NextRequest) {
+async function savePricing(req: NextRequest) {
     const owner = await getOwnerFromRequest(req);
     if (!owner?.shopId)
         return NextResponse.json({ error: 'Shop membership required' }, { status: 401 });
@@ -27,3 +28,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: e instanceof UploadError ? e.message : 'Unable to save rates' }, { status: e instanceof UploadError ? e.status : 400 });
     }
 }
+
+export const GET=(req:NextRequest)=>withRequestPerformance("pricing-read",()=>getPricing(req));
+export const POST=(req:NextRequest)=>withRequestPerformance("pricing-save",()=>savePricing(req));

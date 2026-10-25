@@ -14,7 +14,7 @@ it.skipIf(!target)('private document upload, pricing, scoped downloads, expiry a
  const url=new URL(target!);if(url.hostname!=='localhost'||!url.searchParams.get('host')?.includes('printos-tenant-pg-'))throw Error('Disposable fixture database required');
  vi.stubEnv('PRINTOS_DOCUMENT_STORAGE','supabase');const storage=new FixtureStorage();context.storage=storage;let clock=new Date();const db=new PrismaClient({datasources:{db:{url:target!}}});const svc=documentService(db,storage,()=>clock);
  try{
- await db.organization.createMany({data:[{id:'doc-shop-a',name:'Docs A',slug:'doc-shop-a'},{id:'doc-shop-b',name:'Docs B',slug:'doc-shop-b'}]});
+ await db.organization.createMany({data:[{id:'doc-shop-a',name:'Docs A',slug:'doc-shop-a',metadata:'{\"printos\":{\"orderingEnabled\":true}}'},{id:'doc-shop-b',name:'Docs B',slug:'doc-shop-b',metadata:'{\"printos\":{\"orderingEnabled\":true}}'}]});
  await db.printer.createMany({data:[{id:'doc-pa',shopId:'doc-shop-a',deviceId:'DOC-A',name:'A'},{id:'doc-pb',shopId:'doc-shop-b',deviceId:'DOC-B',name:'B'},{id:'doc-legacy',deviceId:'DOC-OLD',name:'Legacy'}]});
  await db.shopRateCard.create({data:{id:'doc-rates',shopId:'doc-shop-a',minimumPaise:0,rules:[{paperSize:'A4',colorMode:'BW',duplex:false,basis:'PAGE',unitPaise:233}]}});
  const pdf=await PDFDocument.create();for(let i=0;i<5;i++)pdf.addPage();const bytes=Buffer.from(await pdf.save());
