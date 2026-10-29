@@ -1,0 +1,33 @@
+{
+  "syntheticOnly": true,
+  "windowsExecuted": false,
+  "osStorageUsed": false,
+  "productionAccess": false,
+  "physicalPrinting": false,
+  "cloudCookieBeforeRestart": true,
+  "identityAcrossActualElectronRestart": "PASS with synthetic AES protector",
+  "noRepeatEnrollment": true,
+  "restartProcessingDisabled": true,
+  "restartLanding": "A calmer day at the counter.",
+  "navigation": [
+    "Overview",
+    "Print jobs",
+    "Reports"
+  ],
+  "setupDirectNavigation": false,
+  "cloudCookieAcrossRestart": false,
+  "setupFullNavigationBlocked": true,
+  "preview": {
+    "opened": true,
+    "isolated": true,
+    "frames": [
+      {
+        "printControlDisabled": false,
+        "printControlPresent": true,
+        "viewer": true
+      }
+    ]
+  },
+  "noJobClaimRequests": true,
+  "noActivationRequests": true
+}
